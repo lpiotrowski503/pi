@@ -1,0 +1,65 @@
+/* Add mobile styles for the component here.  */
+.position {
+  padding: 10;
+  border-width: 3;
+  border-color: #555;
+  color: #555;
+  background: #fff;
+}
+
+.position FlexboxLayout {
+  justify-content: center;
+  align-items: center;
+  font-size: 40;
+}
+
+.move {
+  background: #555;
+}
+
+.move button {
+  background: rgba(255, 0, 0, 0.3);
+  color: red;
+  border-width: 2;
+  border-color: red;
+  font-size: 30;
+  border-radius: 5;
+  margin: 10;
+}
+
+.velocity {
+  background: #555;
+}
+
+.velocity button {
+  border-width: 2;
+  border-color: violet;
+  font-size: 12;
+  border-radius: 5;
+  margin: 5;
+}
+
+.default {
+  background: rgba(238, 130, 238, 0.3);
+  color: violet;
+}
+
+.active {
+  /* color: rgba(238, 130, 238, 0.3); */
+  color: #000;
+  background: violet;
+}
+
+.offset {
+  background: #555;
+}
+
+.offset button {
+  background: rgba(255, 166, 0, 0.3);
+  color: orange;
+  border-width: 2;
+  border-color: orange;
+  font-size: 12;
+  border-radius: 5;
+  margin: 5;
+}

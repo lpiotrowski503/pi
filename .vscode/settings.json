@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    "**/*.js": false,
+    "**/.git": true,
+    "**/.gitignore": false,
+    "**/node_modules": false,
+    "**/dist": false
+  },
+  "git.ignoreLimitWarning": true
+}

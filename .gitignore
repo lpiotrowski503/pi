@@ -1,0 +1,41 @@
+raspberry/node_modules/
+
+# NativeScript
+ns/hooks/
+ns/node_modules/
+ns/platforms/
+
+# NativeScript Template
+ns/*.js.map
+ns/*.js
+ns/!webpack.config.js
+
+# Logs
+ns/logs
+ns/*.log
+ns/npm-debug.log*
+ns/yarn-debug.log*
+ns/yarn-error.log*
+
+# General
+ns/.DS_Store
+ns/.AppleDouble
+ns/.LSOverride
+ns/.idea
+ns/.cloud
+ns/.project
+ns/tmp/
+ns/typings/
+
+# Visual Studio Code
+ns/.vscode/*
+ns/!.vscode/settings.json
+ns/!.vscode/tasks.json
+ns/!.vscode/launch.json
+ns/!.vscode/extensions.json
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
