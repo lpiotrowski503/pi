@@ -1,9 +1,12 @@
-import { Stepper } from "./stepper";
-import { Http } from "./http";
 import * as express from "express";
 import * as cors from "cors";
 import * as path from "path";
-const Gpio = require("pigpio").Gpio;
+import * as Datastore from "nedb";
+
+import { Stepper } from "./stepper";
+import { Auto } from "./auto";
+import { Http } from "./http";
+// import { Db } from "./db";
 // ──────────────────────────────────────────────────────────────
 //   :::::: J O H N N Y : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────
@@ -19,110 +22,153 @@ const board = new five.Board({
 // ──────────────────────────────────────────────────────────────
 //
 const app = express();
+const http = new Http();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
+//
+// ────────────────────────────────────────────────────────────────────────
+//   :::::: P O S I T I O N   D B : :  :   :    :     :        :          :
+// ────────────────────────────────────────────────────────────────────────
+//
+const dbPositions = new Datastore({
+  filename: "./db/positions",
+  autoload: true
+});
+let current: any;
+let stepper: any;
+let limitNumber = 100;
+let limit = {
+  x: {
+    max: limitNumber,
+    min: -limitNumber
+  },
+  y: {
+    max: limitNumber,
+    min: -limitNumber
+  },
+  z: {
+    max: limitNumber,
+    min: -limitNumber
+  }
+};
+//
+// ──────────────────────────────────────────────────────────────────────
+//   :::::: P R O G R A M   D B : :  :   :    :     :        :          :
+// ──────────────────────────────────────────────────────────────────────
+//
+const dbPrograms = new Datastore({ filename: "./db/programs", autoload: true });
+let program: any;
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: G P I O : :  :   :    :     :        :          :
 // ────────────────────────────────────────────────────────────
 //
 board.on("ready", () => {
-  //
-  // ────────────────────────────────────────────────────────────
-  //   :::::: S T E P   M O T O R : :  :   :    :     :        :
-  // ────────────────────────────────────────────────────────────
-  //
-  const x = new Stepper(20, 21);
-  const y = new Stepper(6, 13);
-  // const z = new Stepper(19, 26);
-  x.turn(1000, 1, 1)
-    .then((data: any) => console.log("1 x", data))
-    .catch(err => console.log("error", err));
+  dbPositions.findOne({ name: "current" }, (err, doc) => {
+    current = doc;
+    // console.log(current.position);
+    //
+    // ────────────────────────────────────────────────────────────
+    //   :::::: S T E E P   M O T O R : :  :   :    :     :
+    // ────────────────────────────────────────────────────────────
+    //
+    stepper = {
+      x: new Stepper(20, 21, current.position.x),
+      y: new Stepper(6, 13, current.position.y)
+    };
+    dbPrograms.findOne({}, (err, prog) => {
+      program = new Auto(prog);
+      setTimeout(() => {
+        program.setParams(0, current.position, (settings: any) => {
+          console.log("settings", settings);
 
-  y.turn(1000, 1, 1)
-    .then((data: any) => console.log("1 y", data))
-    .catch(err => console.log("error", err));
+          if (settings.direction !== null) {
+            stepper["x"]
+              .autoGoToPosition(
+                settings.destination,
+                settings.direction,
+                settings.speed,
+                limit["x"],
+                (response: any) => {
+                  console.log("start", current.position.x);
+                  console.log("x", response);
+                  // current.position["x"] = response.step;
+                  // console.log(current.position);
+                  // dbPositions.update(
+                  //   { name: "current" },
+                  //   current,
+                  //   {},
+                  //   (err, doc) => {
+                  //     // console.log(doc);
+                  //   }
+                  // );
+                  // console.log(current.position);
+                }
+              )
+              .then(result => {
+                console.log("then", result);
+              })
+              .catch(err => {});
+          }
+        });
+      }, 2000);
+    });
+  });
   //
   // ──────────────────────────────────────────────────────────────────────
   //   :::::: H T T P  : :  :   :    :     :        :          :
   // ──────────────────────────────────────────────────────────────────────
   //
-  // app.use("/api/motor", new Http().http());
-  const http = new Http();
   app.use("/api/motor", (req, res) => {
-    // X +
-    // ─────────────────────────────────────────────────────────────────
-    if (req.body.axis === "x-up") {
-      if (req.body.action === true) {
-        x.start(1, 1)
-          .then((data: any) => console.log("start --- x-up", data))
-          .catch(err => console.log("error", err));
-      }
+    http.stepperStrategy(
+      req,
+      () => {
+        stepper[req.body.axis]
+          .manualStart(
+            req.body.direction,
+            req.body.speed,
+            limit[req.body.axis],
+            (response: any) => {
+              // console.log(response);
 
-      if (req.body.action === false) {
-        x.stop();
-        console.log("stop --- x-up");
-      }
-    }
-    // X -
-    // ─────────────────────────────────────────────────────────────────
-    if (req.body.axis === "x-down") {
-      if (req.body.action === true) {
-        console.log("start");
-        // x.turn(100, 0, 1)
-        //   .then((data: any) => console.log("x-down", data))
-        //   .catch(err => console.log("error", err));
+              current.position[req.body.axis] = response.step;
+              console.log(current.position);
+              dbPositions.update(
+                { name: "current" },
+                current,
+                {},
+                (err, doc) => {
+                  // console.log(doc);
+                }
+              );
+              // console.log(current.position);
+            }
+          )
+          .then(result => {
+            // console.log(result);
+          })
+          .catch(err => {});
+      },
+      () => {
+        stepper[req.body.axis]
+          .manualStop((response: any) => {
+            // console.log(response);
 
-        x.start(0, 1)
-          .then((data: any) => console.log("x-down", data))
-          .catch(err => console.log("error", err));
-      }
+            current.position[req.body.axis] = response.step;
+            console.log(current.position);
 
-      if (req.body.action === false) {
-        y.stop();
-        console.log("stop");
+            dbPositions.update({ name: "current" }, current, {}, (err, doc) => {
+              // console.log(current.position);
+            });
+          })
+          .then(result => {
+            // console.log(result);
+          })
+          .catch(err => {});
       }
-    }
-    // Y +
-    // ─────────────────────────────────────────────────────────────────
-    if (req.body.axis === "y-up") {
-      if (req.body.action === true) {
-        console.log("start");
-        // y.turn(100, 1, 1)
-        //   .then((data: any) => console.log("y-up", data))
-        //   .catch(err => console.log("error", err));
-
-        y.start(1, 1)
-          .then((data: any) => console.log("y-up", data))
-          .catch(err => console.log("error", err));
-      }
-
-      if (req.body.action === false) {
-        y.stop();
-        console.log("stop");
-      }
-    }
-    // Y -
-    // ─────────────────────────────────────────────────────────────────
-    if (req.body.axis === "y-down") {
-      if (req.body.action === true) {
-        console.log("start");
-        // y.turn(100, 0, 1)
-        //   .then((data: any) => console.log("y-down", data))
-        //   .catch(err => console.log("error", err));
-
-        y.start(0, 1)
-          .then((data: any) => console.log("y-down", data))
-          .catch(err => console.log("error", err));
-      }
-
-      if (req.body.action === false) {
-        console.log("stop");
-      }
-    }
-
-    console.log(req.body);
+    );
+    // console.log(current.position);
     res.json({
       motor: req.body
     });
@@ -133,3 +179,7 @@ board.on("ready", () => {
     console.log(`server running on port ${port}`);
   });
 });
+
+// to do
+// ────────────────────────────────────────────────────────────────────────────────
+// zmienić current nie o jeden tylko o wielkość kroku - D O N E

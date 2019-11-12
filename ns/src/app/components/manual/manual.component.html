@@ -4,14 +4,7 @@
   --   :::::: P O S I T I O N : :  :   :    :     :        :
   -- ──────────────────────────────────────────────────────────
   -->
-  <GridLayout
-    row="0"
-    col="0"
-    rowSpan="2"
-    rows="*, *"
-    columns="auto, *"
-    class="position"
-  >
+  <GridLayout row="0" col="0" rowSpan="2" rows="*, *" columns="auto, *" class="position">
     <FlexboxLayout row="0" col="0">
       <Label text="X:"></Label>
     </FlexboxLayout>
@@ -30,73 +23,28 @@
   --   :::::: M O V E : :  :   :    :     :        :          :
   -- ──────────────────────────────────────────────────────────
   -->
-  <GridLayout
-    row="0"
-    col="1"
-    rowSpan="2"
-    rows="*, *, *"
-    columns="*, *, *"
-    class="move"
-  >
-    <Button
-      (touch)="onTouch('x-up', $event)"
-      row="0"
-      col="1"
-      text="X +"
-    ></Button>
-    <Button
-      (touch)="onTouch('y-up', $event)"
-      row="1"
-      col="0"
-      text="Y +"
-    ></Button>
-    <Button
-      (touch)="onTouch('y-down', $event)"
-      row="1"
-      col="2"
-      text="Y -"
-    ></Button>
-    <Button
-      (touch)="onTouch('x-down', $event)"
-      row="2"
-      col="1"
-      text="X -"
-    ></Button>
+  <GridLayout row="0" col="1" rowSpan="2" rows="*, *, *" columns="*, *, *" class="move">
+    <Button (touch)="onTouch('x', 1, $event)" row="0" col="1" text="X +"></Button>
+    <Button (touch)="onTouch('y', 1, $event)" row="1" col="0" text="Y +"></Button>
+    <Button (touch)="onTouch('y', -1, $event)" row="1" col="2" text="Y -"></Button>
+    <Button (touch)="onTouch('x', -1, $event)" row="2" col="1" text="X -"></Button>
   </GridLayout>
   <!--
     -- ──────────────────────────────────────────────────────────────────
     --   :::::: V E L O C I T Y : :  :   :    :     :        :          :
     -- ──────────────────────────────────────────────────────────────────
     -->
-  <GridLayout row="2" col="0" rows="*" columns="*, *, *, *" class="velocity">
-    <Button
-      (touch)="changeSpeed(100, 1, $event)"
-      [ngClass]="{ active: currentSpeed == 1, default: currentSpeed != 1 }"
-      row="0"
-      col="0"
-      text="100 %"
-    ></Button>
-    <Button
-      (touch)="changeSpeed(75, 2, $event)"
-      [ngClass]="{ active: currentSpeed == 2, default: currentSpeed != 2 }"
-      row="0"
-      col="1"
-      text="75 %"
-    ></Button>
-    <Button
-      (touch)="changeSpeed(50, 3, $event)"
-      [ngClass]="{ active: currentSpeed == 3, default: currentSpeed != 3 }"
-      row="0"
-      col="2"
-      text="50 %"
-    ></Button>
-    <Button
-      (touch)="changeSpeed(25, 4, $event)"
-      [ngClass]="{ active: currentSpeed == 4, default: currentSpeed != 4 }"
-      row="0"
-      col="3"
-      text="25 %"
-    ></Button>
+  <GridLayout row="2" col="0" rows="*" columns="*, *, *, *, *" class="velocity">
+    <Button (touch)="changeSpeed(1, $event)" [ngClass]="{ active: speed == 1, default: speed != 1 }" row="0" col="0"
+      text="100%"></Button>
+    <Button (touch)="changeSpeed(2, $event)" [ngClass]="{ active: speed == 2, default: speed != 2 }" row="0" col="1"
+      text="50%"></Button>
+    <Button (touch)="changeSpeed(4, $event)" [ngClass]="{ active: speed == 4, default: speed != 4 }" row="0" col="2"
+      text="25%"></Button>
+    <Button (touch)="changeSpeed(8, $event)" [ngClass]="{ active: speed == 8, default: speed != 8 }" row="0" col="3"
+      text="12%"></Button>
+    <Button (touch)="changeSpeed(16, $event)" [ngClass]="{ active: speed == 16, default: speed != 16 }" row="0" col="4"
+      text="6%"></Button>
   </GridLayout>
   <!--
     -- ──────────────────────────────────────────────────────────────
