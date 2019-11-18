@@ -60,6 +60,100 @@ let limit = {
 //
 const dbPrograms = new Datastore({ filename: "./db/programs", autoload: true });
 let program;
+// ────────────────────────────────────────────────────────────────────────────────
+let moveCounter = 0;
+let complite = 0;
+const stepperAxis = (axis, settings) => {
+    if (settings[moveCounter][axis].direction !== null) {
+        stepper[axis]
+            .autoGoToPosition(settings[moveCounter][axis].destination, settings[moveCounter][axis].direction, settings[moveCounter][axis].speed, limit[axis], (response) => {
+            // console.log(axis, response);
+            if (response.done) {
+                complite++;
+                console.log("if----------------------", axis, moveCounter, complite);
+                if (complite === 3) {
+                    moveCounter++;
+                    console.log(moveCounter);
+                    complite = 0;
+                    if (moveCounter < settings.length) {
+                        console.log("if settings", settings[moveCounter]["x"]);
+                        console.log("if settings", settings[moveCounter]["y"]);
+                        console.log("if settings", settings[moveCounter]["z"]);
+                        setTimeout(() => {
+                            stepperAxis("x", settings);
+                            stepperAxis("y", settings);
+                            stepperAxis("z", settings);
+                        }, 100);
+                    }
+                    else {
+                        console.log("if program finish----------------");
+                        console.log(moveCounter);
+                        console.log(settings.length);
+                        console.log("-----------------------------------");
+                        return;
+                    }
+                }
+                else {
+                    return;
+                }
+            }
+            // console.log("start", current.position.x);
+            // current.position["x"] = response.step;
+            // console.log(current.position);
+            // dbPositions.update(
+            //   { name: "current" },
+            //   current,
+            //   {},
+            //   (err, doc) => {
+            //     // console.log(doc);
+            //   }
+            // );
+            // console.log(current.position);
+        })
+            .then((response) => {
+            console.log("then----", response);
+        })
+            .catch(err => { });
+    }
+    else {
+        complite++;
+        console.log("else----------------------", axis, moveCounter, complite);
+        if (complite === 3) {
+            moveCounter++;
+            complite = 0;
+            if (moveCounter < settings.length) {
+                console.log("else settings", settings[moveCounter]["x"]);
+                console.log("else settings", settings[moveCounter]["y"]);
+                console.log("else settings", settings[moveCounter]["z"]);
+                setTimeout(() => {
+                    stepperAxis("x", settings);
+                    stepperAxis("y", settings);
+                    stepperAxis("z", settings);
+                }, 100);
+            }
+            else {
+                console.log("else program finish----------------");
+                console.log(moveCounter);
+                console.log(settings.length);
+                console.log("-----------------------------------");
+                return;
+            }
+        }
+        else {
+            return;
+        }
+    }
+};
+const autoStartProgram = () => {
+    program.setParams(current.position, (settings) => {
+        console.log(settings);
+        stepperAxis("x", settings);
+        stepperAxis("y", settings);
+        stepperAxis("z", settings);
+        // }
+    });
+};
+// ────────────────────────────────────────────────────────────────────────────────
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: G P I O : :  :   :    :     :        :          :
@@ -68,7 +162,6 @@ let program;
 board.on("ready", () => {
     dbPositions.findOne({ name: "current" }, (err, doc) => {
         current = doc;
-        // console.log(current.position);
         //
         // ────────────────────────────────────────────────────────────
         //   :::::: S T E E P   M O T O R : :  :   :    :     :
@@ -76,36 +169,14 @@ board.on("ready", () => {
         //
         stepper = {
             x: new stepper_1.Stepper(20, 21, current.position.x),
-            y: new stepper_1.Stepper(6, 13, current.position.y)
+            y: new stepper_1.Stepper(6, 13, current.position.y),
+            z: new stepper_1.Stepper(6, 13, current.position.z)
         };
         dbPrograms.findOne({}, (err, prog) => {
             program = new auto_1.Auto(prog);
             setTimeout(() => {
-                program.setParams(0, current.position, (settings) => {
-                    console.log("settings", settings);
-                    if (settings.direction !== null) {
-                        stepper["x"]
-                            .autoGoToPosition(settings.destination, settings.direction, settings.speed, limit["x"], (response) => {
-                            console.log("start", current.position.x);
-                            console.log("x", response);
-                            // current.position["x"] = response.step;
-                            // console.log(current.position);
-                            // dbPositions.update(
-                            //   { name: "current" },
-                            //   current,
-                            //   {},
-                            //   (err, doc) => {
-                            //     // console.log(doc);
-                            //   }
-                            // );
-                            // console.log(current.position);
-                        })
-                            .then(result => {
-                            console.log("then", result);
-                        })
-                            .catch(err => { });
-                    }
-                });
+                console.log(prog.src);
+                autoStartProgram();
             }, 2000);
         });
     });
@@ -118,34 +189,22 @@ board.on("ready", () => {
         http.stepperStrategy(req, () => {
             stepper[req.body.axis]
                 .manualStart(req.body.direction, req.body.speed, limit[req.body.axis], (response) => {
-                // console.log(response);
                 current.position[req.body.axis] = response.step;
                 console.log(current.position);
-                dbPositions.update({ name: "current" }, current, {}, (err, doc) => {
-                    // console.log(doc);
-                });
-                // console.log(current.position);
+                dbPositions.update({ name: "current" }, current, {}, (err, doc) => { });
             })
-                .then(result => {
-                // console.log(result);
-            })
-                .catch(err => { });
+                .then(() => { })
+                .catch(() => { });
         }, () => {
             stepper[req.body.axis]
                 .manualStop((response) => {
-                // console.log(response);
                 current.position[req.body.axis] = response.step;
                 console.log(current.position);
-                dbPositions.update({ name: "current" }, current, {}, (err, doc) => {
-                    // console.log(current.position);
-                });
+                dbPositions.update({ name: "current" }, current, {}, (err, doc) => { });
             })
-                .then(result => {
-                // console.log(result);
-            })
-                .catch(err => { });
+                .then(() => { })
+                .catch(() => { });
         });
-        // console.log(current.position);
         res.json({
             motor: req.body
         });
@@ -158,3 +217,5 @@ board.on("ready", () => {
 // to do
 // ────────────────────────────────────────────────────────────────────────────────
 // zmienić current nie o jeden tylko o wielkość kroku - D O N E
+// zamienić settings na [settings] może pomóc do odpalenia całego programu - D O N E
+// delayMicroseconds() - kontrola szybkości skoków

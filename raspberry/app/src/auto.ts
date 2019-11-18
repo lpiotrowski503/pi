@@ -30,36 +30,15 @@ export class Auto {
         start + 1,
         end === -1 ? row.length : end
       );
-
-      //   console.log(row);
-      //   console.log(start);
-      //   console.log(end);
-      //   console.log(this.position);
     }
-    // return this.position;
-  }
-
-  private read(): void {
-    this.program.src.forEach((row: string) => {
-      this.onWorkingStep(row);
-      console.log("------------");
-      this.onPosition("x", row);
-      this.onPosition("y", row);
-      this.onPosition("z", row);
-      console.log("------------");
-    });
   }
 
   private readOne(index: number): void {
     const src = this.program.src;
-    // this.program.src.forEach((row: string) => {
     this.onWorkingStep(src[index]);
-    // console.log("------------");
     this.onPosition("x", src[index]);
     this.onPosition("y", src[index]);
     this.onPosition("z", src[index]);
-    // console.log("------------");
-    // });
   }
 
   private compare(start: any, end: any): number | null {
@@ -74,33 +53,34 @@ export class Auto {
   }
 
   public setParams(
-    index: number,
     startPosition: { x: number; y: number; z: number },
-    callback: (args: {
-      destination: number;
-      direction: number | null;
-      speed: number;
-    }) => {}
+    callback: any
   ): any {
-    this.readOne(index);
-    // console.log(this.compare(startPosition.x, this.position.x));
-    // console.log(this.compare(startPosition.y, this.position.y));
-    // console.log(this.compare(startPosition.z, this.position.z));
-
-    // this.readOne(1);
-    // console.log(this.compare(startPosition.x, this.position.x));
-    // console.log(this.compare(startPosition.y, this.position.y));
-    // console.log(this.compare(startPosition.z, this.position.z));
-
-    //   resolve({
-    //     direction: this.compare(startPosition.x, this.position.x),
-    //     stepSize: this.workingStep
-    //   });
-
-    callback({
-      destination: this.position.x,
-      direction: this.compare(startPosition.x, this.position.x),
-      speed: this.workingStep
+    const result: any[] = [];
+    let position = startPosition;
+    this.program.src.forEach((row: string, index: number) => {
+      this.readOne(index);
+      result.push({
+        x: {
+          destination: this.position.x,
+          direction: this.compare(position.x, this.position.x),
+          speed: this.workingStep
+        },
+        y: {
+          destination: this.position.y,
+          direction: this.compare(startPosition.y, this.position.y),
+          speed: this.workingStep
+        },
+        z: {
+          destination: this.position.z,
+          direction: this.compare(startPosition.z, this.position.z),
+          speed: this.workingStep
+        }
+      });
+      position.x = +`${this.position.x}`;
+      position.y = +`${this.position.y}`;
+      position.z = +`${this.position.z}`;
     });
+    callback(result);
   }
 }
