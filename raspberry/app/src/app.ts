@@ -59,12 +59,14 @@ let limit = {
 //
 const dbPrograms = new Datastore({ filename: "./db/programs", autoload: true });
 let program: any;
-// ────────────────────────────────────────────────────────────────────────────────
+let settings: any;
 let moveCounter = 0;
 let complite = 0;
 
-const stepperAxis = (axis: string, settings: any) => {
-  if (settings[moveCounter][axis].direction !== null) {
+const stepperAxis = (axis: string) => {
+  if (settings[moveCounter][axis].direction === null) {
+    nextStep();
+  } else {
     stepper[axis]
       .autoGoToPosition(
         settings[moveCounter][axis].destination,
@@ -72,95 +74,58 @@ const stepperAxis = (axis: string, settings: any) => {
         settings[moveCounter][axis].speed,
         limit[axis],
         (response: any) => {
-          // console.log(axis, response);
+          updateCurrentPosition(axis, response);
           if (response.done) {
-            complite++;
-            console.log(
-              "if----------------------",
-              axis,
-              moveCounter,
-              complite
-            );
-            if (complite === 3) {
-              moveCounter++;
-              console.log(moveCounter);
-              complite = 0;
-              if (moveCounter < settings.length) {
-                console.log("if settings", settings[moveCounter]["x"]);
-                console.log("if settings", settings[moveCounter]["y"]);
-                console.log("if settings", settings[moveCounter]["z"]);
-                setTimeout(() => {
-                  stepperAxis("x", settings);
-                  stepperAxis("y", settings);
-                  stepperAxis("z", settings);
-                }, 100);
-              } else {
-                console.log("if program finish----------------");
-                console.log(moveCounter);
-                console.log(settings.length);
-                console.log("-----------------------------------");
-                return;
-              }
-            } else {
-              return;
-            }
+            nextStep();
           }
-          // console.log("start", current.position.x);
-          // current.position["x"] = response.step;
-          // console.log(current.position);
-          // dbPositions.update(
-          //   { name: "current" },
-          //   current,
-          //   {},
-          //   (err, doc) => {
-          //     // console.log(doc);
-          //   }
-          // );
-          // console.log(current.position);
         }
       )
       .then((response: any) => {
-        console.log("then----", response);
+        console.log("then---", response);
+        console.log("current", current.position);
       })
-      .catch(err => {});
-  } else {
-    complite++;
-    console.log("else----------------------", axis, moveCounter, complite);
-    if (complite === 3) {
-      moveCounter++;
-      complite = 0;
-      if (moveCounter < settings.length) {
-        console.log("else settings", settings[moveCounter]["x"]);
-        console.log("else settings", settings[moveCounter]["y"]);
-        console.log("else settings", settings[moveCounter]["z"]);
-        setTimeout(() => {
-          stepperAxis("x", settings);
-          stepperAxis("y", settings);
-          stepperAxis("z", settings);
-        }, 100);
-      } else {
-        console.log("else program finish----------------");
-        console.log(moveCounter);
-        console.log(settings.length);
-        console.log("-----------------------------------");
-        return;
-      }
+      .catch((err: any) => {});
+  }
+};
+
+const updateCurrentPosition = (axis: string, response: any) => {
+  current.position[axis] = response.step;
+  dbPositions.update({ name: "current" }, current, {}, (err, doc) => {});
+};
+
+const nextStep = () => {
+  complite++;
+  if (complite === 3) {
+    moveCounter++;
+    complite = 0;
+    if (moveCounter < settings.length) {
+      setTimeout(() => {
+        stepperAxis("x");
+        stepperAxis("y");
+        stepperAxis("z");
+      }, 100);
     } else {
+      console.log("program finish----------------");
+      console.log(moveCounter);
+      console.log(settings.length);
+      console.log("current", current.position);
+      console.log("-----------------------------------");
       return;
     }
+  } else {
+    return;
   }
 };
 
 const autoStartProgram = () => {
-  program.setParams(current.position, (settings: any) => {
+  program.setParams(current.position, (_settings: any) => {
+    settings = _settings;
     console.log(settings);
-    stepperAxis("x", settings);
-    stepperAxis("y", settings);
-    stepperAxis("z", settings);
-    // }
+    stepperAxis("x");
+    stepperAxis("y");
+    stepperAxis("z");
   });
 };
-// ────────────────────────────────────────────────────────────────────────────────
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: G P I O : :  :   :    :     :        :          :
@@ -182,6 +147,7 @@ board.on("ready", () => {
     dbPrograms.findOne({}, (err, prog: any) => {
       program = new Auto(prog);
       setTimeout(() => {
+        console.log("current", current.position);
         console.log(prog.src);
         autoStartProgram();
       }, 2000);
