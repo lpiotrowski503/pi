@@ -13,6 +13,7 @@ export class Stepper {
   private step: any;
   private dir: any;
   private steps: any;
+  private args: any;
 
   constructor(
     step: number,
@@ -168,117 +169,83 @@ export class Stepper {
   //   :::::: A U T O : :  :   :    :     :        :          :
   // ──────────────────────────────────────────────────────────
   //
-  private onRest(
-    destination: number,
-    direction: number,
-    callback: ({ step, destination: number }) => {},
-    resolve: any
-  ): void {
-    if (destination - this.steps < 1 && destination - this.steps > -1) {
+  private onRest(): void {
+    if (
+      this.args.destination - this.steps < 1 &&
+      this.args.destination - this.steps > -1
+    ) {
       if (
-        destination - this.steps < 0.0625 &&
-        destination - this.steps > -0.0625
+        this.args.destination - this.steps < 0.0625 &&
+        this.args.destination - this.steps > -0.0625
       ) {
-        this.autoStop(callback, resolve, {
-          done: true,
-          destination,
-          step: this.steps
-        });
+        this.autoStop();
       } else {
         this.onStepSize(16);
-        this.autoStep(direction);
+        this.autoStep();
       }
     } else {
-      this.autoStop(callback, resolve, {
-        done: true,
-        destination,
-        step: this.steps
-      });
+      this.autoStop();
     }
-    this.autoStep(direction);
+    this.autoStep();
   }
 
-  private autoStop(callback: (args: any) => {}, resolve: any, arg?: any): void {
+  private autoStop(): void {
     this.finish = true;
     this.running = false;
-    callback(arg);
-    resolve({ stop: this.finish, ...arg });
+    this.args.callback({ done: true, step: this.steps, ...this.args });
+    this.args.resolve({ done: true, step: this.steps, ...this.args });
   }
 
-  private autoStep(direction: number): void {
-    this.steps = this.steps + direction * (1 / this.stepSize);
+  private autoStep(): void {
+    this.steps = this.steps + this.args.direction * (1 / this.stepSize);
     this.step.digitalWrite(true);
     this.step.digitalWrite(false);
   }
 
-  private autoLimit(
-    destination: number,
-    direction: number,
-    limit: { max: number; min: number },
-    callback: ({ step, destination: number }) => {},
-    resolve: any
-  ): void {
-    if (this.steps + 1 > limit.max && direction === 1) {
-      this.autoStop(callback, resolve, { done: true, destination });
-    } else if (this.steps - 1 < limit.min && direction === -1) {
-      this.autoStop(callback, resolve, { done: true, destination });
-    } else if (this.steps + 1 > destination && direction === 1) {
-      this.onRest(destination, direction, callback, resolve);
-    } else if (this.steps - 1 < destination && direction === -1) {
-      this.onRest(destination, direction, callback, resolve);
+  private autoLimit(): void {
+    if (this.steps + 1 > this.args.limit.max && this.args.direction === 1) {
+      this.autoStop();
+    } else if (
+      this.steps - 1 < this.args.limit.min &&
+      this.args.direction === -1
+    ) {
+      this.autoStop();
+    } else if (
+      this.steps + 1 > this.args.destination &&
+      this.args.direction === 1
+    ) {
+      this.onRest();
+    } else if (
+      this.steps - 1 < this.args.destination &&
+      this.args.direction === -1
+    ) {
+      this.onRest();
     } else {
-      this.autoStep(direction);
+      this.autoStep();
     }
   }
 
-  private autoMove(
-    destination: number,
-    direction: number,
-    stepSize: number,
-    limit: { max: number; min: number },
-    callback: ({ step, destination: number }) => {},
-    resolve: any,
-    timeout: number
-  ): any {
+  private autoMove(): any {
     if (!this.finish) {
-      callback({ step: this.steps, destination: destination });
-      this.autoLimit(destination, direction, limit, callback, resolve);
+      this.args.callback({ step: this.steps, ...this.args });
+      this.autoLimit();
       setTimeout(() => {
-        this.autoMove(
-          destination,
-          direction,
-          stepSize,
-          limit,
-          callback,
-          resolve,
-          timeout
-        );
-      }, timeout);
+        this.autoMove();
+      }, this.args.timeout);
     }
     return;
   }
 
-  public autoGoToPosition(
-    destination: number,
-    direction: number,
-    stepSize: number,
-    limit: { max: number; min: number },
-    callback: ({ step, destination: number }) => {},
-    timeout: number = 1
-  ): Promise<{ done: boolean }> {
+  public autoGoToPosition(args: any): Promise<any> {
     if (this.onRunning()) {
       return new Promise((resolve, reject) => {
-        this.onStepSize(stepSize);
-        this.onDirection(direction);
-        this.autoMove(
-          destination,
-          direction,
-          stepSize,
-          limit,
-          callback,
-          resolve,
-          timeout
-        );
+        this.args = {
+          ...args,
+          resolve
+        };
+        this.onStepSize(this.args.stepSize);
+        this.onDirection(this.args.direction);
+        this.autoMove();
       });
     }
     return new Promise((resolve, reject) => reject("motor is running !!!"));

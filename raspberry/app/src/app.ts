@@ -62,24 +62,28 @@ let program: any;
 let settings: any;
 let moveCounter = 0;
 let complite = 0;
+let args: any;
 
 const stepperAxis = (axis: string) => {
   if (settings[moveCounter][axis].direction === null) {
     nextStep();
   } else {
-    stepper[axis]
-      .autoGoToPosition(
-        settings[moveCounter][axis].destination,
-        settings[moveCounter][axis].direction,
-        settings[moveCounter][axis].speed,
-        limit[axis],
-        (response: any) => {
-          updateCurrentPosition(axis, response);
-          if (response.done) {
-            nextStep();
-          }
+    args = {
+      destination: settings[moveCounter][axis].destination,
+      direction: settings[moveCounter][axis].direction,
+      stepSize: settings[moveCounter][axis].speed,
+      limit: limit[axis],
+      callback: (response: any) => {
+        updateCurrentPosition(axis, response);
+        if (response.done) {
+          nextStep();
         }
-      )
+      },
+      timeout: 1
+    };
+
+    stepper[axis]
+      .autoGoToPosition(args)
       .then((response: any) => {
         console.log("then---", response);
         console.log("current", current.position);
