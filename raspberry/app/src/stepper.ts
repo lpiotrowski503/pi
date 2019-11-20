@@ -1,5 +1,5 @@
-// const Gpio = require("pigpio").Gpio;
-import { Gpio } from "pigpio";
+const Gpio = require("pigpio").Gpio;
+// import { Gpio } from "pigpio";
 
 export class Stepper {
   /**
@@ -70,15 +70,15 @@ export class Stepper {
     this.stepSize = 16;
   }
 
-  private onStepSize(stepSize: number): void {
+  private onStepSize(stepSize = this.args.stepSize): void {
     this[`step_${stepSize}`]();
   }
 
-  private onDirection(direction: number): void {
-    if (direction === 1) {
+  private onDirection(): void {
+    if (this.args.direction === 1) {
       this.dir.digitalWrite(true);
     }
-    if (direction === -1) {
+    if (this.args.direction === -1) {
       this.dir.digitalWrite(false);
     }
   }
@@ -96,72 +96,57 @@ export class Stepper {
   //   :::::: M A N U A L : :  :   :    :     :        :          :
   // ──────────────────────────────────────────────────────────────
   //
-  private manualStep(direction: number, stepSize: number): void {
-    this.steps = this.steps + direction * (1 / stepSize);
+  private manualStep(): void {
+    this.steps = this.steps + this.args.direction * (1 / this.args.stepSize);
     this.step.digitalWrite(true);
     this.step.digitalWrite(false);
   }
 
-  private manualLimit(
-    direction: number,
-    stepSize: number,
-    limit: { max: number; min: number },
-    callback: ({ step: number }) => {},
-    resolve: any
-  ): void {
-    if (this.steps + 1 > limit.max && direction === 1) {
-      this.manualStop(callback);
-      resolve({ done: true });
-    } else if (this.steps - 1 < limit.min && direction === -1) {
-      this.manualStop(callback);
-      resolve({ done: true });
+  private manualLimit(): void {
+    if (this.steps + 1 > this.args.limit.max && this.args.direction === 1) {
+      this.manualStop();
+    } else if (
+      this.steps - 1 < this.args.limit.min &&
+      this.args.direction === -1
+    ) {
+      this.manualStop();
     } else {
-      this.manualStep(direction, stepSize);
-      resolve({ done: false });
+      this.manualStep();
     }
   }
 
-  private manualMove(
-    direction: number,
-    stepSize: number,
-    limit: { max: number; min: number },
-    callback: ({ step: number }) => {},
-    resolve: any
-  ): any {
+  private manualMove(): any {
     if (!this.finish) {
-      this.onStepSize(stepSize);
-      this.onDirection(direction);
-      this.manualLimit(direction, stepSize, limit, callback, resolve);
-      callback({ step: this.steps });
+      this.onStepSize();
+      this.onDirection();
+      this.manualLimit();
+      this.args.callback({ step: this.steps, ...this.args });
       setTimeout(() => {
-        this.manualMove(direction, stepSize, limit, callback, resolve);
+        this.manualMove();
       }, 1);
     }
     return;
   }
 
-  public manualStart(
-    direction: number,
-    stepSize: number,
-    limit: { max: number; min: number },
-    callback: ({ step: number }) => {}
-  ): Promise<{ done: boolean }> {
+  public manualStart(args: any): Promise<{ done: boolean }> {
     if (this.onRunning()) {
-      return new Promise((resolve, reject) =>
-        this.manualMove(direction, stepSize, limit, callback, resolve)
-      );
+      return new Promise((resolve, reject) => {
+        this.args = {
+          ...args,
+          resolve
+        };
+        this.manualMove();
+      });
     }
     return new Promise((resolve, reject) => reject("motor is running !!!"));
   }
 
-  public manualStop(
-    callback: ({ step: number }) => {}
-  ): Promise<{ stop: boolean }> {
+  public manualStop(): Promise<any> {
     return new Promise((resolve, reject) => {
       this.finish = true;
       this.running = false;
-      callback({ step: this.steps });
-      resolve({ stop: true });
+      this.args.callback({ done: true, step: this.steps, ...this.args });
+      this.args.resolve({ done: true, step: this.steps, ...this.args });
     });
   }
   //
@@ -243,11 +228,16 @@ export class Stepper {
           ...args,
           resolve
         };
-        this.onStepSize(this.args.stepSize);
-        this.onDirection(this.args.direction);
+        this.onStepSize();
+        this.onDirection();
         this.autoMove();
       });
     }
     return new Promise((resolve, reject) => reject("motor is running !!!"));
   }
 }
+//
+// todo
+// ────────────────────────────────────────────────────────────────────────────────
+// manual refactor
+// 3 class - settings ( main ), manual , auto

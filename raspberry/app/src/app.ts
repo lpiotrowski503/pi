@@ -1,79 +1,32 @@
-import * as express from "express";
-import * as cors from "cors";
-import * as path from "path";
-import * as Datastore from "nedb";
-
 import { Stepper } from "./stepper";
 import { Auto } from "./auto";
 import { Http } from "./http";
-// import { Db } from "./db";
-// ──────────────────────────────────────────────────────────────
-//   :::::: J O H N N Y : :  :   :    :     :        :          :
-// ──────────────────────────────────────────────────────────────
-//
-const raspi = require("raspi-io").RaspiIO;
-const five = require("johnny-five");
-const board = new five.Board({
-  io: new raspi()
-});
+import { Store } from "./store";
+import { Db } from "./db";
 //
 // ──────────────────────────────────────────────────────────────
-//   :::::: S E R V E R : :  :   :    :     :        :          :
+//   :::::: C O N F I G : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────────
 //
-const app = express();
 const http = new Http();
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "../public")));
+const app = new Store();
+const db = new Db();
 //
-// ────────────────────────────────────────────────────────────────────────
-//   :::::: P O S I T I O N   D B : :  :   :    :     :        :          :
-// ────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────
+//   :::::: A U T O : :  :   :    :     :        :          :
+// ──────────────────────────────────────────────────────────
 //
-const dbPositions = new Datastore({
-  filename: "./db/positions",
-  autoload: true
-});
-let current: any;
-let stepper: any;
-let limitNumber = 100;
-let limit = {
-  x: {
-    max: limitNumber,
-    min: -limitNumber
-  },
-  y: {
-    max: limitNumber,
-    min: -limitNumber
-  },
-  z: {
-    max: limitNumber,
-    min: -limitNumber
-  }
-};
-//
-// ──────────────────────────────────────────────────────────────────────
-//   :::::: P R O G R A M   D B : :  :   :    :     :        :          :
-// ──────────────────────────────────────────────────────────────────────
-//
-const dbPrograms = new Datastore({ filename: "./db/programs", autoload: true });
-let program: any;
-let settings: any;
-let moveCounter = 0;
-let complite = 0;
-let args: any;
-
 const stepperAxis = (axis: string) => {
-  if (settings[moveCounter][axis].direction === null) {
+  if (app.settings[app.moveCounter][axis].direction === null) {
     nextStep();
   } else {
-    args = {
-      destination: settings[moveCounter][axis].destination,
-      direction: settings[moveCounter][axis].direction,
-      stepSize: settings[moveCounter][axis].speed,
-      limit: limit[axis],
+    app.args = {
+      destination: app.settings[app.moveCounter][axis].destination,
+      direction: app.settings[app.moveCounter][axis].direction,
+      stepSize: app.settings[app.moveCounter][axis].speed,
+      limit: app.limit[axis],
       callback: (response: any) => {
+        // console.log(response.step);
         updateCurrentPosition(axis, response);
         if (response.done) {
           nextStep();
@@ -82,27 +35,27 @@ const stepperAxis = (axis: string) => {
       timeout: 1
     };
 
-    stepper[axis]
-      .autoGoToPosition(args)
+    app.stepper[axis]
+      .autoGoToPosition(app.args)
       .then((response: any) => {
         console.log("then---", response);
-        console.log("current", current.position);
+        console.log("current", app.current.position);
       })
       .catch((err: any) => {});
   }
 };
 
 const updateCurrentPosition = (axis: string, response: any) => {
-  current.position[axis] = response.step;
-  dbPositions.update({ name: "current" }, current, {}, (err, doc) => {});
+  app.current.position[axis] = response.step;
+  db.positions.update({ name: "current" }, app.current, {}, (err, doc) => {});
 };
 
 const nextStep = () => {
-  complite++;
-  if (complite === 3) {
-    moveCounter++;
-    complite = 0;
-    if (moveCounter < settings.length) {
+  app.complite++;
+  if (app.complite === 3) {
+    app.moveCounter++;
+    app.complite = 0;
+    if (app.moveCounter < app.settings.length) {
       setTimeout(() => {
         stepperAxis("x");
         stepperAxis("y");
@@ -110,9 +63,9 @@ const nextStep = () => {
       }, 100);
     } else {
       console.log("program finish----------------");
-      console.log(moveCounter);
-      console.log(settings.length);
-      console.log("current", current.position);
+      console.log(app.moveCounter);
+      console.log(app.settings.length);
+      console.log("current", app.current.position);
       console.log("-----------------------------------");
       return;
     }
@@ -122,36 +75,46 @@ const nextStep = () => {
 };
 
 const autoStartProgram = () => {
-  program.setParams(current.position, (_settings: any) => {
-    settings = _settings;
-    console.log(settings);
+  app.program.setParams(app.current.position, (_settings: any) => {
+    app.settings = _settings;
+    console.log(app.settings);
     stepperAxis("x");
     stepperAxis("y");
     stepperAxis("z");
   });
 };
 //
+// ──────────────────────────────────────────────────────────────
+//   :::::: M A N U A L : :  :   :    :     :        :          :
+// ──────────────────────────────────────────────────────────────
+//
+const manual = {
+  start: () => {},
+  stop: () => {}
+};
+
+//
 // ────────────────────────────────────────────────────────────
 //   :::::: G P I O : :  :   :    :     :        :          :
 // ────────────────────────────────────────────────────────────
 //
-board.on("ready", () => {
-  dbPositions.findOne({ name: "current" }, (err, doc) => {
-    current = doc;
+app.board.on("ready", () => {
+  db.positions.findOne({ name: "current" }, (err, doc) => {
+    app.current = doc;
     //
     // ────────────────────────────────────────────────────────────
     //   :::::: S T E E P   M O T O R : :  :   :    :     :
     // ────────────────────────────────────────────────────────────
     //
-    stepper = {
-      x: new Stepper(20, 21, current.position.x),
-      y: new Stepper(6, 13, current.position.y),
-      z: new Stepper(6, 13, current.position.z)
+    app.stepper = {
+      x: new Stepper(20, 21, app.current.position.x),
+      y: new Stepper(6, 13, app.current.position.y),
+      z: new Stepper(6, 13, app.current.position.z)
     };
-    dbPrograms.findOne({}, (err, prog: any) => {
-      program = new Auto(prog);
+    db.programs.findOne({}, (err, prog: any) => {
+      app.program = new Auto(prog);
       setTimeout(() => {
-        console.log("current", current.position);
+        console.log("current", app.current.position);
         console.log(prog.src);
         autoStartProgram();
       }, 2000);
@@ -162,41 +125,34 @@ board.on("ready", () => {
   //   :::::: H T T P  : :  :   :    :     :        :          :
   // ──────────────────────────────────────────────────────────────────────
   //
-  app.use("/api/motor", (req, res) => {
+  app.server.use("/api/motor", (req, res) => {
+    app.args = {
+      direction: req.body.direction,
+      stepSize: req.body.speed,
+      limit: app.limit[req.body.axis],
+      callback: (response: any) => {
+        app.current.position[req.body.axis] = response.step;
+        console.log(app.current.position);
+        db.positions.update(
+          { name: "current" },
+          app.current,
+          {},
+          (err, doc) => {}
+        );
+      }
+    };
+
     http.stepperStrategy(
       req,
       () => {
-        stepper[req.body.axis]
-          .manualStart(
-            req.body.direction,
-            req.body.speed,
-            limit[req.body.axis],
-            (response: any) => {
-              current.position[req.body.axis] = response.step;
-              console.log(current.position);
-              dbPositions.update(
-                { name: "current" },
-                current,
-                {},
-                (err, doc) => {}
-              );
-            }
-          )
+        app.stepper[req.body.axis]
+          .manualStart(app.args)
           .then(() => {})
           .catch(() => {});
       },
       () => {
-        stepper[req.body.axis]
-          .manualStop((response: any) => {
-            current.position[req.body.axis] = response.step;
-            console.log(current.position);
-            dbPositions.update(
-              { name: "current" },
-              current,
-              {},
-              (err, doc) => {}
-            );
-          })
+        app.stepper[req.body.axis]
+          .manualStop()
           .then(() => {})
           .catch(() => {});
       }
@@ -204,11 +160,6 @@ board.on("ready", () => {
     res.json({
       motor: req.body
     });
-  });
-
-  const port = process.env.PORT || 3000;
-  const server = app.listen(port, () => {
-    console.log(`server running on port ${port}`);
   });
 });
 
