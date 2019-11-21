@@ -11,6 +11,35 @@ export class Db {
       autoload: true
     })
   ) {}
+
+  public getCurrent(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.positions.findOne({ name: "current" }, (err, current) => {
+        resolve(current);
+      });
+    });
+  }
+
+  public getProgram(programName: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.programs.findOne({ name: programName }, (err, program) => {
+        resolve(program);
+      });
+    });
+  }
+
+  public updateCurrent(current: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.positions.update(
+        { name: "current" },
+        current,
+        {},
+        (err, _current) => {
+          resolve(_current);
+        }
+      );
+    });
+  }
 }
 // public storage() {}
 

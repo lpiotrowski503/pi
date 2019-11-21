@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const stepper_1 = require("./stepper");
 const auto_1 = require("./auto");
@@ -18,6 +27,7 @@ const db = new db_1.Db();
 //   :::::: A U T O : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────
 //
+const setArgs = () => { };
 const stepperAxis = (axis) => {
     if (app.settings[app.moveCounter][axis].direction === null) {
         nextStep();
@@ -29,8 +39,8 @@ const stepperAxis = (axis) => {
             stepSize: app.settings[app.moveCounter][axis].speed,
             limit: app.limit[axis],
             callback: (response) => {
-                // console.log(response.step);
-                updateCurrentPosition(axis, response);
+                app.current.position[axis] = response.step;
+                db.updateCurrent(app.current);
                 if (response.done) {
                     nextStep();
                 }
@@ -46,10 +56,6 @@ const stepperAxis = (axis) => {
             .catch((err) => { });
     }
 };
-const updateCurrentPosition = (axis, response) => {
-    app.current.position[axis] = response.step;
-    db.positions.update({ name: "current" }, app.current, {}, (err, doc) => { });
-};
 const nextStep = () => {
     app.complite++;
     if (app.complite === 3) {
@@ -60,7 +66,7 @@ const nextStep = () => {
                 stepperAxis("x");
                 stepperAxis("y");
                 stepperAxis("z");
-            }, 100);
+            }, 1);
         }
         else {
             console.log("program finish----------------");
@@ -78,12 +84,25 @@ const nextStep = () => {
 const autoStartProgram = () => {
     app.program.setParams(app.current.position, (_settings) => {
         app.settings = _settings;
-        console.log(app.settings);
         stepperAxis("x");
         stepperAxis("y");
         stepperAxis("z");
     });
 };
+const prepareDb = () => __awaiter(void 0, void 0, void 0, function* () {
+    app.current = yield db.getCurrent();
+    app.stepper = {
+        x: new stepper_1.Stepper(20, 21, app.current.position.x),
+        y: new stepper_1.Stepper(6, 13, app.current.position.y),
+        z: new stepper_1.Stepper(6, 13, app.current.position.z)
+    };
+    app.program = new auto_1.Auto(yield db.getProgram("program 1"));
+    setTimeout(() => {
+        console.log(app.settings);
+        console.log(app.current);
+        autoStartProgram();
+    }, 2000);
+});
 //
 // ──────────────────────────────────────────────────────────────
 //   :::::: M A N U A L : :  :   :    :     :        :          :
@@ -99,27 +118,7 @@ const manual = {
 // ────────────────────────────────────────────────────────────
 //
 app.board.on("ready", () => {
-    db.positions.findOne({ name: "current" }, (err, doc) => {
-        app.current = doc;
-        //
-        // ────────────────────────────────────────────────────────────
-        //   :::::: S T E E P   M O T O R : :  :   :    :     :
-        // ────────────────────────────────────────────────────────────
-        //
-        app.stepper = {
-            x: new stepper_1.Stepper(20, 21, app.current.position.x),
-            y: new stepper_1.Stepper(6, 13, app.current.position.y),
-            z: new stepper_1.Stepper(6, 13, app.current.position.z)
-        };
-        db.programs.findOne({}, (err, prog) => {
-            app.program = new auto_1.Auto(prog);
-            setTimeout(() => {
-                console.log("current", app.current.position);
-                console.log(prog.src);
-                autoStartProgram();
-            }, 2000);
-        });
-    });
+    prepareDb();
     //
     // ──────────────────────────────────────────────────────────────────────
     //   :::::: H T T P  : :  :   :    :     :        :          :
@@ -130,22 +129,16 @@ app.board.on("ready", () => {
             direction: req.body.direction,
             stepSize: req.body.speed,
             limit: app.limit[req.body.axis],
-            callback: (response) => {
+            callback: (response) => __awaiter(void 0, void 0, void 0, function* () {
                 app.current.position[req.body.axis] = response.step;
+                db.updateCurrent(app.current);
                 console.log(app.current.position);
-                db.positions.update({ name: "current" }, app.current, {}, (err, doc) => { });
-            }
+            })
         };
         http.stepperStrategy(req, () => {
-            app.stepper[req.body.axis]
-                .manualStart(app.args)
-                .then(() => { })
-                .catch(() => { });
+            app.stepper[req.body.axis].manualStart(app.args);
         }, () => {
-            app.stepper[req.body.axis]
-                .manualStop()
-                .then(() => { })
-                .catch(() => { });
+            app.stepper[req.body.axis].manualStop();
         });
         res.json({
             motor: req.body
