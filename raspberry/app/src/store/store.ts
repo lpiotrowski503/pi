@@ -10,7 +10,7 @@ export class Store {
     public stepper: any = {},
     public program: any = {},
     public settings: any = [],
-    public args: any = {},
+    public params: any = {},
     public moveCounter: number = 0,
     public complite: number = 0,
     public limit: any = {
@@ -40,5 +40,35 @@ export class Store {
     this.board = new five.Board({
       io: new raspi()
     });
+  }
+
+  public setManualParams({ req, db }): void {
+    this.params = {
+      direction: req.body.direction,
+      stepSize: req.body.speed,
+      limit: this.limit[req.body.axis],
+      callback: (response: any) => {
+        this.current.position[req.body.axis] = response.step;
+        db.updateCurrent(this.current);
+        console.log(this.current.position);
+      }
+    };
+  }
+
+  public setAutoParams({ axis, db, nextStep }): void {
+    this.params = {
+      destination: this.settings[this.moveCounter][axis].destination,
+      direction: this.settings[this.moveCounter][axis].direction,
+      stepSize: this.settings[this.moveCounter][axis].speed,
+      limit: this.limit[axis],
+      callback: (response: any) => {
+        this.current.position[axis] = response.step;
+        db.updateCurrent(this.current);
+        if (response.done) {
+          nextStep();
+        }
+      },
+      timeout: 1
+    };
   }
 }

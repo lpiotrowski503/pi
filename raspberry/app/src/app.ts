@@ -1,8 +1,9 @@
-import { Stepper } from "./stepper";
-import { Auto } from "./auto";
-import { Http } from "./http";
-import { Store } from "./store";
-import { Db } from "./db";
+import { Stepper } from "./stepper/stepper";
+import { Program } from "./program/program";
+import { Http } from "./http/http";
+import { Store } from "./store/store";
+import { Db } from "./db/db";
+import { Auto } from "./auto/auto";
 //
 // ──────────────────────────────────────────────────────────────
 //   :::::: C O N F I G : :  :   :    :     :        :          :
@@ -11,34 +12,18 @@ import { Db } from "./db";
 const http = new Http();
 const app = new Store();
 const db = new Db();
+const auto = new Auto();
 //
 // ──────────────────────────────────────────────────────────
 //   :::::: A U T O : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────
 //
-const setAutoArgs = (axis: string) => {
-  app.args = {
-    destination: app.settings[app.moveCounter][axis].destination,
-    direction: app.settings[app.moveCounter][axis].direction,
-    stepSize: app.settings[app.moveCounter][axis].speed,
-    limit: app.limit[axis],
-    callback: (response: any) => {
-      app.current.position[axis] = response.step;
-      db.updateCurrent(app.current);
-      if (response.done) {
-        nextStep();
-      }
-    },
-    timeout: 1
-  };
-};
-
 const stepperAxis = (axis: string) => {
   if (app.settings[app.moveCounter][axis].direction === null) {
     nextStep();
   } else {
-    setAutoArgs(axis);
-    app.stepper[axis].autoGoToPosition(app.args).then((response: any) => {
+    app.setAutoParams({ axis, db, nextStep });
+    app.stepper[axis].autoGoToPosition(app.params).then((response: any) => {
       console.log("then---", response);
       console.log("current", app.current.position);
     });
@@ -70,63 +55,48 @@ const nextStep = () => {
 };
 
 const autoStartProgram = () => {
-  app.program.setParams(app.current.position, (_settings: any) => {
-    app.settings = _settings;
-    stepperAxis("x");
-    stepperAxis("y");
-    stepperAxis("z");
-  });
+  stepperAxis("x");
+  stepperAxis("y");
+  stepperAxis("z");
 };
 
-const prepareDb = async () => {
+const prepareAuto = async () => {
   app.current = await db.getCurrent();
   app.stepper = {
     x: new Stepper(20, 21, app.current.position.x),
     y: new Stepper(6, 13, app.current.position.y),
-    z: new Stepper(6, 13, app.current.position.z)
+    z: new Stepper(19, 26, app.current.position.z)
   };
-  app.program = new Auto(await db.getProgram("program 1"));
-  setTimeout(() => {
-    console.log(app.settings);
-    console.log(app.current);
-    autoStartProgram();
-  }, 2000);
-};
-//
-// ──────────────────────────────────────────────────────────────
-//   :::::: M A N U A L : :  :   :    :     :        :          :
-// ──────────────────────────────────────────────────────────────
-//
-const setManualArgs = (req: any) => {
-  app.args = {
-    direction: req.body.direction,
-    stepSize: req.body.speed,
-    limit: app.limit[req.body.axis],
-    callback: (response: any) => {
-      app.current.position[req.body.axis] = response.step;
-      db.updateCurrent(app.current);
-      console.log(app.current.position);
-    }
-  };
+  app.program = new Program(await db.getProgram("program 1"));
+  app.program.setParams(app.current.position, (_settings: any) => {
+    app.settings = _settings;
+  });
 };
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: G P I O : :  :   :    :     :        :          :
 // ────────────────────────────────────────────────────────────
 //
-app.board.on("ready", () => {
-  prepareDb();
+app.board.on("ready", async () => {
+  await prepareAuto();
+  setTimeout(() => {
+    console.log(app.current);
+    console.log(app.settings);
+    // console.log(0, app);
+    // auto.autoStartProgram({ app, db });
+    autoStartProgram();
+  }, 2000);
   //
   // ──────────────────────────────────────────────────────────────────────
   //   :::::: H T T P  : :  :   :    :     :        :          :
   // ──────────────────────────────────────────────────────────────────────
   //
   app.server.use("/api/motor", (req, res) => {
-    setManualArgs(req);
+    app.setManualParams({ req, db });
     http.stepperStrategy(
       req,
       () => {
-        app.stepper[req.body.axis].manualStart(app.args);
+        app.stepper[req.body.axis].manualStart(app.params);
       },
       () => {
         app.stepper[req.body.axis].manualStop();
@@ -137,7 +107,6 @@ app.board.on("ready", () => {
     });
   });
 });
-
 // to do
 // ────────────────────────────────────────────────────────────────────────────────
 // zmienić current nie o jeden tylko o wielkość kroku - D O N E

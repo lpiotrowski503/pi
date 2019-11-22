@@ -1,4 +1,4 @@
-export class Auto {
+export class Program {
   private program: any;
 
   constructor(
