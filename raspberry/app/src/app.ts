@@ -84,7 +84,7 @@ app.board.on("ready", async () => {
     console.log(app.settings);
     // console.log(0, app);
     // auto.autoStartProgram({ app, db });
-    autoStartProgram();
+    // autoStartProgram();
   }, 2000);
   //
   // ──────────────────────────────────────────────────────────────────────
@@ -104,6 +104,22 @@ app.board.on("ready", async () => {
     );
     res.json({
       motor: req.body
+    });
+  });
+
+  app.server.get("/api/programs", async (req, res) => {
+    res.json(await db.getPrograms());
+  });
+
+  app.server.patch("/api/program", (req, res) => {
+    res.json({
+      action: "udpade"
+    });
+  });
+
+  app.server.delete("/api/program", (req, res) => {
+    res.json({
+      action: "delete"
     });
   });
 });

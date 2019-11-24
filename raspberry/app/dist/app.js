@@ -95,7 +95,7 @@ app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
         console.log(app.settings);
         // console.log(0, app);
         // auto.autoStartProgram({ app, db });
-        autoStartProgram();
+        // autoStartProgram();
     }, 2000);
     //
     // ──────────────────────────────────────────────────────────────────────
@@ -111,6 +111,19 @@ app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
         });
         res.json({
             motor: req.body
+        });
+    });
+    app.server.get("/api/programs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        res.json(yield db.getPrograms());
+    }));
+    app.server.patch("/api/program", (req, res) => {
+        res.json({
+            action: "udpade"
+        });
+    });
+    app.server.delete("/api/program", (req, res) => {
+        res.json({
+            action: "delete"
         });
     });
 }));

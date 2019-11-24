@@ -1,6 +1,7 @@
 {
   "files.exclude": {
     "**/*.js": false,
+    "**/*.spec.ts": true,
     "**/.git": true,
     "**/.gitignore": false,
     "**/node_modules": false,

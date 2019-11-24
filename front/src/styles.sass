@@ -1,0 +1,50 @@
+/* You can add global styles to this file, and also import other style files */
+$lightTextColor: #fff
+$border: violet
+$borderLight: lighten($border, 10%)
+
+ul
+  padding: 0
+
+.flex
+  display: flex
+
+.flex-row
+  display: flex
+  align-items: center
+  justify-content: space-between
+
+.flex-item
+  padding: 10px 20px
+  margin: 5px 10px
+
+.btn
+  background: transparent
+  border: none
+  border-radius: 5px
+  cursor: pointer
+
+  &--save
+    background: green
+    color: $lightTextColor
+
+  &--edit
+    background: orange
+    color: $lightTextColor
+
+  &--delete
+    color: $lightTextColor
+    background: red
+
+.list-row
+  margin: 5px 10px
+  border-radius: 10px
+  border: 2px solid $border
+  transition: all 1s
+
+  &:hover
+    cursor: pointer
+    background: $borderLight
+
+
+
