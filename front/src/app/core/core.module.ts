@@ -1,13 +1,20 @@
 import { NgModule } from "@angular/core";
-import { CommonModule } from "@angular/common";
 
 import { CoreRoutingModule } from "./core-routing.module";
-import { ProgramsComponent } from "./programs/programs.component";
-import { SourcePipe } from "src/app/pipes/source.pipe";
-import { EditProgramComponent } from "./edit-program/edit-program.component";
+
+import { ProgramsComponent } from "./pages/programs/programs.component";
+import { EditProgramComponent } from "./pages/edit-program/edit-program.component";
+import { CreateProgramComponent } from "./pages/create-program/create-program.component";
+import { LibsModule } from "../libs/libs.module";
+import { CoreComponent } from './core.component';
 
 @NgModule({
-  declarations: [ProgramsComponent, SourcePipe, EditProgramComponent],
-  imports: [CommonModule, CoreRoutingModule]
+  declarations: [
+    ProgramsComponent,
+    EditProgramComponent,
+    CreateProgramComponent,
+    CoreComponent
+  ],
+  imports: [LibsModule, CoreRoutingModule]
 })
 export class CoreModule {}

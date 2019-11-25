@@ -6,6 +6,9 @@ import { Pipe, PipeTransform } from "@angular/core";
 export class SourcePipe implements PipeTransform {
   transform(value: string[], ...args: any[]): any {
     console.log("value", value);
-    return value.join(";\n");
+    if (value) {
+      return value.join(";\n");
+    }
+    return value;
   }
 }
