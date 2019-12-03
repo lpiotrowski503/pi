@@ -40,9 +40,9 @@ class Db {
             });
         });
     }
-    updateProgram(program) {
+    updateProgram(id, program) {
         return new Promise((resolve, reject) => {
-            this.positions.update({ _id: program.id }, program, {}, (err, _program) => {
+            this.programs.update({ _id: id }, program, {}, (err, _program) => {
                 resolve(_program);
             });
         });

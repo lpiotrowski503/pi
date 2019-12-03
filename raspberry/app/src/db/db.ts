@@ -44,16 +44,11 @@ export class Db {
     });
   }
 
-  public updateProgram(program: any): Promise<any> {
+  public updateProgram(id: string, program: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.positions.update(
-        { _id: program.id },
-        program,
-        {},
-        (err, _program) => {
-          resolve(_program);
-        }
-      );
+      this.programs.update({ _id: id }, program, {}, (err, _program) => {
+        resolve(_program);
+      });
     });
   }
 

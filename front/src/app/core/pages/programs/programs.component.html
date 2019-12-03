@@ -1,15 +1,20 @@
 <ul>
-  <!-- <li *ngFor="let program of ( programs$ | async )"> -->
-  <li *ngFor="let program of programs" class="flex-row list-row">
+  <li *ngFor="let program of ( programs$ | async )" class="flex-row-sb list-row">
     <div class="flex">
-      <h2 class="flex-item">
-        {{ program.name }}
-      </h2>
-      <p class="flex-item">
-        {{ program.author }}
-      </p>
+      <div class="flex-col container">
+        <label class="small">Name</label>
+        <h2 class="flex-item">
+          {{ program.name }}
+        </h2>
+      </div>
+      <div class="flex-col container">
+        <label class="small">Author</label>
+        <p class="flex-item">
+          {{ program.author }}
+        </p>
+      </div>
     </div>
-    <div class="flex">
+    <div class="flex-row-end">
       <button (click)="onEdit(program)" class="btn btn--edit flex-item">edit</button>
       <button (click)="onDelete(program)" class="btn btn--delete flex-item">delete</button>
     </div>

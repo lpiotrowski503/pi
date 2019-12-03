@@ -1,1 +1,9 @@
-<p>navbar works!</p>
+<nav>
+  <ul>
+    <li *ngFor="let page of pages; let i = index">
+      <a (click)="navi(page.path, i)" [ngClass]="{link: true, active: active === i}">
+        {{ page.name }}
+      </a>
+    </li>
+  </ul>
+</nav>

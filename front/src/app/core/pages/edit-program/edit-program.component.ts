@@ -23,14 +23,17 @@ export class EditProgramComponent implements OnInit {
   }
 
   setEditData() {
-    this.data.id = +this.route.snapshot.paramMap.get("id");
+    this.data.id = this.route.snapshot.paramMap.get("id");
     this.data.program = this.store.getProgram(this.data.id);
   }
 
-  public onSave({ program, source }): void {
-    console.log("save program", program);
-    console.log("save source", source);
-    // console.log("save source", source.replace(/\n/g, "").split(";"));
-    this.router.navigate(["app"]);
+  public onSave(program: any): void {
+    this.store
+      .editProgram(program._id, {
+        name: program.name,
+        author: program.author,
+        src: program.src.replace(/\n/g, "").split(";")
+      })
+      .subscribe(() => this.router.navigate(["app"]));
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { TouchGestureEventData } from "tns-core-modules/ui/gestures/gestures";
 import { HttpClient } from "@angular/common/http";
+import { RouterExtensions } from "nativescript-angular/router";
 
 @Component({
     selector: "ns-manual",
@@ -17,7 +18,10 @@ export class ManualComponent implements OnInit {
     // private axis: string;
     private zero: number;
 
-    constructor(private httpClient: HttpClient) {
+    constructor(
+        private httpClient: HttpClient,
+        private router: RouterExtensions
+    ) {
         this.event = [0, 0];
         this.touched = false;
         this.speed = 1;
@@ -123,6 +127,10 @@ export class ManualComponent implements OnInit {
             },
             event
         );
+    }
+
+    public goToAuto(): void {
+        this.router.navigate(["auto"]);
     }
 
     ngOnInit() {}

@@ -111,16 +111,16 @@ app.board.on("ready", async () => {
     res.json(await db.getPrograms());
   });
 
-  app.server.patch("/api/program", (req, res) => {
-    res.json({
-      action: "udpade"
-    });
+  app.server.post("/api/program", async (req, res) => {
+    res.json(await db.createProgram(req.body));
   });
 
-  app.server.delete("/api/program", (req, res) => {
-    res.json({
-      action: "delete"
-    });
+  app.server.patch("/api/program/:id", async (req, res) => {
+    res.json(await db.updateProgram(req.params.id, req.body));
+  });
+
+  app.server.delete("/api/program/:id", async (req, res) => {
+    res.json(await db.deleteProgram(req.params.id));
   });
 });
 // to do

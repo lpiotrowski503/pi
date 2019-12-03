@@ -1,41 +1,40 @@
 import { HttpService } from "./http.service";
 import { Injectable } from "@angular/core";
+import { map } from "rxjs/operators";
 
 @Injectable({
   providedIn: "root"
 })
 export class StoreService {
   private store = {
-    programs: [
-      {
-        id: 1,
-        name: "Program 1",
-        author: "boss",
-        src: ["x50 y50 z50", "x100 y50 z50", "x100 y100 z50", "x100 y100 z100"]
-      },
-      {
-        id: 2,
-        name: "Program 2",
-        author: "boss",
-        src: ["x50 y50 z50", "x100 y50 z50", "x100 y100 z50", "x100 y100 z100"]
-      },
-      {
-        id: 3,
-        name: "Program 3",
-        author: "boss",
-        src: ["x50 y50 z50", "x100 y50 z50", "x100 y100 z50", "x100 y100 z100"]
-      }
-    ]
+    programs: []
   };
 
   constructor(private http: HttpService) {}
 
-  getPrograms() {
-    // return this.http.getPrograms();
-    return this.store.programs;
+  public getPrograms() {
+    return this.http
+      .getPrograms()
+      .pipe(map((programs: any[]) => (this.store.programs = programs)));
   }
 
-  getProgram(id: any) {
-    return this.store.programs.filter(program => program.id === id)[0];
+  public getProgram(id: string) {
+    return this.store.programs.filter(program => program._id === id)[0];
+  }
+
+  public setPrograms(programs: any[]): void {
+    this.store.programs = programs;
+  }
+
+  public createProgram(program: any) {
+    return this.http.createProgram(program);
+  }
+
+  public editProgram(id: string, program: any) {
+    return this.http.editProgram(id, program);
+  }
+
+  public deleteProgram(id: string) {
+    return this.http.deleteProgram(id);
   }
 }

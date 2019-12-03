@@ -116,16 +116,15 @@ app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     app.server.get("/api/programs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.json(yield db.getPrograms());
     }));
-    app.server.patch("/api/program", (req, res) => {
-        res.json({
-            action: "udpade"
-        });
-    });
-    app.server.delete("/api/program", (req, res) => {
-        res.json({
-            action: "delete"
-        });
-    });
+    app.server.post("/api/program", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        res.json(yield db.createProgram(req.body));
+    }));
+    app.server.patch("/api/program/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        res.json(yield db.updateProgram(req.params.id, req.body));
+    }));
+    app.server.delete("/api/program/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        res.json(yield db.deleteProgram(req.params.id));
+    }));
 }));
 // to do
 // ────────────────────────────────────────────────────────────────────────────────

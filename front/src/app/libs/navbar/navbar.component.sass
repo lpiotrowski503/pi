@@ -1,0 +1,29 @@
+$border: violet
+$active: lighten($border, 10%)
+$shadow: #555
+$fontSize: 14px
+
+\:host
+  display: flex
+  height: 100px
+  border-bottom: 2px solid $border
+  box-shadow: 0px 5px 15px -5px $shadow
+
+  nav
+    display: flex
+    flex-grow: 1
+
+    ul
+      display: flex
+      align-items: center
+      flex-grow: 1
+
+      li
+        display: flex
+
+        &:hover
+          background: $active
+
+  .active
+    border-bottom: 2px solid $border
+

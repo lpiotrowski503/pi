@@ -1,6 +1,6 @@
-import { StoreService } from "./../../core/services/store.service";
 import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
-import { Router, ActivatedRoute } from "@angular/router";
+// import { StoreService } from "./../../core/services/store.service";
+// import { Router, ActivatedRoute } from "@angular/router";
 
 @Component({
   selector: "app-program",
@@ -14,19 +14,20 @@ export class ProgramComponent implements OnInit {
   constructor() {
     this.input = {
       program: {
+        _id: "",
         name: "",
-        author: ""
-        // source: []
+        author: "",
+        src: []
       }
     };
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log(this.input);
+    this.input.program.src = this.input.program.src.join(";\n");
+  }
 
-  public onSave(program: any, source: any): void {
-    this.output.emit({
-      program
-      // source: source.replace(/\n/g, "").split(";")
-    });
+  public onSave(): void {
+    this.output.emit(this.input.program);
   }
 }

@@ -8,6 +8,10 @@
 
     192.168.43.77
 
+## copy to raspberry
+
+    npm run cp
+
 ## ssh
 
     <!-- connect -->

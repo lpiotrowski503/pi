@@ -1,7 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { Observable } from "rxjs";
-import { environment as env } from "../../../../environments/environment";
 import { StoreService } from "../../services/store.service";
 
 @Component({
@@ -11,23 +10,23 @@ import { StoreService } from "../../services/store.service";
 })
 export class ProgramsComponent implements OnInit {
   public programs$: Observable<any>;
-  public programs: any[];
 
   constructor(private router: Router, private store: StoreService) {}
 
   ngOnInit() {
-    // this.programs$ = this.store.getPrograms();
-    this.programs = this.store.getPrograms();
+    this.getPrograms();
+  }
+
+  public getPrograms() {
+    this.programs$ = this.store.getPrograms();
   }
 
   public onEdit(program: any): void {
-    console.log("edit", program);
-    this.router.navigate([`app/edit/${program.id}`]);
-    // this.http.patch(`${env.raspberry}program/${program.id}`, program);
+    this.router.navigate([`app/edit/${program._id}`]);
   }
 
   public onDelete(program: any): void {
     console.log("delete", program);
-    // this.http.delete(`${env.raspberry}program/${program.id}`);
+    this.store.deleteProgram(program._id).subscribe(() => this.getPrograms());
   }
 }

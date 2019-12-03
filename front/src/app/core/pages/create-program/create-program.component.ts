@@ -1,5 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
+import { StoreService } from "../../services/store.service";
 
 @Component({
   selector: "app-create-program",
@@ -7,14 +8,17 @@ import { Router } from "@angular/router";
   styleUrls: ["./create-program.component.sass"]
 })
 export class CreateProgramComponent implements OnInit {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private store: StoreService) {}
 
   ngOnInit() {}
 
-  public onSave({ program, source }): void {
-    console.log("save program", program);
-    console.log("save source", source);
-    // console.log("save source", source.replace(/\n/g, "").split(";"));
-    this.router.navigate(["app"]);
+  public onSave(program: any): void {
+    this.store
+      .createProgram({
+        name: program.name,
+        author: program.author,
+        src: program.src.replace(/\n/g, "").split(";")
+      })
+      .subscribe(() => this.router.navigate(["app"]));
   }
 }

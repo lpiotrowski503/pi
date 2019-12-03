@@ -1,32 +1,95 @@
 /* You can add global styles to this file, and also import other style files */
 $lightTextColor: #fff
+$fontSize: 14px
 $border: violet
+$shadow: #555
 $borderLight: lighten($border, 10%)
 
+body, h1, h2, h3, h4, h5, h6, p
+  margin: 0px
+
 ul
-  padding: 0
+  list-style: none
+  padding: 0px
+  margin: 0px
 
 .flex
   display: flex
 
 .flex-row
   display: flex
-  align-items: center
+
+.flex-row-sb
+  display: flex
   justify-content: space-between
 
+.flex-row-end
+  display: flex
+  align-items: flex-end
+
+.flex-center
+  display: flex
+  align-items: center
+  justify-content: center
+
+.flex-col
+  display: flex
+  flex-direction: column
+
 .flex-item
+  flex-grow: 1
+
+.container
+  margin: 10px
+
+.input
   padding: 10px 20px
   margin: 5px 10px
+  border: none
+  border-bottom: 2px solid $border
+  box-shadow: 0px 5px 15px -5px $shadow
+  font-size: $fontSize * 1.5
+  line-height: $fontSize
+
+.label
+  padding: 10px 20px
+  margin: 20px 10px 0px 10px
+  font-size: $fontSize * 2
+
+.link
+  padding: 10px 20px
+  margin: 20px
+  font-size: $fontSize * 2
+  cursor: pointer
+
+
+.text-area
+  padding: 10px 20px
+  margin: 5px 10px
+  border: none
+  border-bottom: 2px solid $border
+  box-shadow: 0px 5px 15px -5px $shadow
+  font-size: $fontSize * 1.5
+
 
 .btn
   background: transparent
   border: none
   border-radius: 5px
   cursor: pointer
+  padding: 10px 20px
+  margin: 5px 10px
+  font-size: $fontSize * 1.5
+
 
   &--save
-    background: green
+    background: $border
     color: $lightTextColor
+    transition: all 0.3s
+
+    &:hover
+      background: $borderLight
+
 
   &--edit
     background: orange
@@ -37,14 +100,17 @@ ul
     background: red
 
 .list-row
+  padding: 10px 20px
   margin: 5px 10px
-  border-radius: 10px
-  border: 2px solid $border
-  transition: all 1s
+  border-bottom: 2px solid $border
+  box-shadow: 0px 5px 15px -5px $shadow
+  font-size: $fontSize * 1.5
 
   &:hover
     cursor: pointer
     background: $borderLight
 
 
-
+.small
+  font-weight: bold
+  font-size: $fontSize / 2

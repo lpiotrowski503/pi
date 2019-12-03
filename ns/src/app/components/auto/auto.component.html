@@ -1,1 +1,28 @@
-<Button text="auto works!" class="btn btn-primary"></Button>
+<GridLayout rows="*, auto" columns="*">
+    <ScrollView row='0' col='0' class="container">
+        <ListView [items]="programs">
+            <ng-template let-item="item">
+                <GridLayout row="0" col="0" rows="*" columns="*, *, *" class="list">
+                    <FlexboxLayout row="0" col="0" class="flex-start">
+                        <label [text]="item.name"></label>
+                    </FlexboxLayout>
+                    <FlexboxLayout row="0" col="1" class="flex-start">
+                        <label [text]="item.author"></label>
+                    </FlexboxLayout>
+                    <FlexboxLayout row="0" col="2" class="flex-end">
+                        <Button text="LOAD" class="load-btn"></Button>
+                    </FlexboxLayout>
+                </GridLayout>
+            </ng-template>
+        </ListView>
+    </ScrollView>
+    <GridLayout row="1" col="0" rows="*" columns="*, *, *, *" class="actions">
+        <Button row="0" col="0" class="play-btn action-btn">
+        </Button>
+        <Button row="0" col="1" class="pause-btn action-btn">
+        </Button>
+        <Button row="0" col="2" class="stop-btn action-btn">
+        </Button>
+        <Button row="0" col="3" text="MANUAL" (touch)="goToManual()"></Button>
+    </GridLayout>
+</GridLayout>
