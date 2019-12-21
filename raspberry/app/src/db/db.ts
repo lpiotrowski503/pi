@@ -20,15 +20,15 @@ export class Db {
     });
   }
 
-  public getProgram(programName: string): Promise<any> {
+  public getProgram(programId: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.programs.findOne({ name: programName }, (err, program) => {
+      this.programs.findOne({ _id: programId }, (err, program) => {
         resolve(program);
       });
     });
   }
 
-  public getPrograms(): Promise<any> {
+  public async getPrograms(): Promise<any> {
     return new Promise((resolve, reject) => {
       this.programs.find({}, (err, programs) => {
         resolve(programs);

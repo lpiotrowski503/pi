@@ -1,0 +1,16 @@
+<ActionBar class="hidden">
+</ActionBar>
+<GridLayout rows="*, auto" columns="*" class="list">
+    <FlexboxLayout row="0" col="0">
+        <label [text]="program.src"></label>
+    </FlexboxLayout>
+    <GridLayout row="1" col="0" rows="*" columns="*, *, *, *" class="actions">
+        <Button row="0" col="0" class="play-btn action-btn" (touch)="start()">
+        </Button>
+        <!-- <Button row="0" col="1" class="pause-btn action-btn">
+        </Button> -->
+        <Button row="0" col="1" class="stop-btn action-btn" (touch)="stop()">
+        </Button>
+        <Button row="0" col="3" text="BACK" (touch)="goBack()"></Button>
+    </GridLayout>
+</GridLayout>

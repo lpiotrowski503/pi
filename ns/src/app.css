@@ -46,3 +46,7 @@ refer to http://docs.nativescript.org/ui/theme.
   background: yellow;
   color: black;
 } */
+
+.hidden {
+  height: 0;
+}

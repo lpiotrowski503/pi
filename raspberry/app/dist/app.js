@@ -24,6 +24,14 @@ const http = new http_1.Http();
 const app = new store_1.Store();
 const db = new db_1.Db();
 const auto = new auto_1.Auto();
+// ────────────────────────────────────────────────────────────────────────────────
+let httpPass = true;
+let byPass = () => {
+    httpPass = false;
+    setTimeout(() => {
+        httpPass = true;
+    }, 2000);
+};
 //
 // ──────────────────────────────────────────────────────────
 //   :::::: A U T O : :  :   :    :     :        :          :
@@ -71,16 +79,19 @@ const autoStartProgram = () => {
     stepperAxis("y");
     stepperAxis("z");
 };
-const prepareAuto = () => __awaiter(void 0, void 0, void 0, function* () {
+const prepareAuto = (id) => __awaiter(void 0, void 0, void 0, function* () {
     app.current = yield db.getCurrent();
+    app.stepper = null;
     app.stepper = {
         x: new stepper_1.Stepper(20, 21, app.current.position.x),
         y: new stepper_1.Stepper(6, 13, app.current.position.y),
         z: new stepper_1.Stepper(19, 26, app.current.position.z)
     };
-    app.program = new program_1.Program(yield db.getProgram("program 1"));
+    app.program = new program_1.Program(yield db.getProgram(id));
     app.program.setParams(app.current.position, (_settings) => {
         app.settings = _settings;
+        console.log(app.current);
+        console.log(app.settings);
     });
 });
 //
@@ -89,14 +100,13 @@ const prepareAuto = () => __awaiter(void 0, void 0, void 0, function* () {
 // ────────────────────────────────────────────────────────────
 //
 app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
-    yield prepareAuto();
-    setTimeout(() => {
-        console.log(app.current);
-        console.log(app.settings);
-        // console.log(0, app);
-        // auto.autoStartProgram({ app, db });
-        // autoStartProgram();
-    }, 2000);
+    // setTimeout(() => {
+    //   // console.log(app.current);
+    //   // console.log(app.settings);
+    //   // console.log(0, app);
+    //   // auto.autoStartProgram({ app, db });
+    //   // autoStartProgram();
+    // }, 2000);
     //
     // ──────────────────────────────────────────────────────────────────────
     //   :::::: H T T P  : :  :   :    :     :        :          :
@@ -114,17 +124,38 @@ app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
         });
     });
     app.server.get("/api/programs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        res.json(yield db.getPrograms());
+        res.status(200).json(yield db.getPrograms());
     }));
     app.server.post("/api/program", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        res.json(yield db.createProgram(req.body));
+        res.status(200).json(yield db.createProgram(req.body));
     }));
     app.server.patch("/api/program/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        res.json(yield db.updateProgram(req.params.id, req.body));
+        res.status(200).json(yield db.updateProgram(req.params.id, req.body));
     }));
     app.server.delete("/api/program/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        res.json(yield db.deleteProgram(req.params.id));
+        res.status(200).json(yield db.deleteProgram(req.params.id));
     }));
+    app.server.get("/api/program/load/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        yield prepareAuto(req.params.id);
+        res.status(200).end();
+    }));
+    app.server.get("/api/program/start", (req, res) => {
+        try {
+            if (httpPass) {
+                app.moveCounter = 0;
+                autoStartProgram();
+                byPass();
+            }
+        }
+        catch (error) {
+            console.log("error");
+            console.log(error);
+        }
+        res.status(200).end();
+    });
+    app.server.get("/api/program/stop", (req, res) => {
+        res.json({ id: "stop" });
+    });
 }));
 // to do
 // ────────────────────────────────────────────────────────────────────────────────
