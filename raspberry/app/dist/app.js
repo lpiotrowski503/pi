@@ -115,9 +115,15 @@ app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     app.server.use("/api/motor", (req, res) => {
         app.setManualParams({ req, db });
         http.stepperStrategy(req, () => {
-            app.stepper[req.body.axis].manualStart(app.params);
+            app.stepper[req.body.axis]
+                .manualStart(app.params)
+                .then()
+                .catch(() => console.log("manual start error"));
         }, () => {
-            app.stepper[req.body.axis].manualStop();
+            app.stepper[req.body.axis]
+                .manualStop()
+                .then()
+                .catch(() => console.log("manual stop error"));
         });
         res.json({
             motor: req.body

@@ -216,7 +216,7 @@ export class Stepper {
       this.autoLimit();
       setTimeout(() => {
         this.autoMove();
-      }, this.args.timeout);
+      }, 1);
     }
     return;
   }

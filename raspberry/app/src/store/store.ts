@@ -4,7 +4,7 @@ import * as path from "path";
 
 export class Store {
   constructor(
-    private limitNumber: number = 200,
+    private limitNumber: number = 50,
     public board: any = {},
     public current: any = {},
     public stepper: any = {},

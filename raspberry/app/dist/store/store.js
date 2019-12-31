@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 class Store {
-    constructor(limitNumber = 200, board = {}, current = {}, stepper = {}, program = {}, settings = [], params = {}, moveCounter = 0, complite = 0, limit = {
+    constructor(limitNumber = 50, board = {}, current = {}, stepper = {}, program = {}, settings = [], params = {}, moveCounter = 0, complite = 0, limit = {
         x: {
             max: limitNumber,
             min: -limitNumber

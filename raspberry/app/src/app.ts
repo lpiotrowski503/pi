@@ -106,10 +106,16 @@ app.board.on("ready", async () => {
     http.stepperStrategy(
       req,
       () => {
-        app.stepper[req.body.axis].manualStart(app.params);
+        app.stepper[req.body.axis]
+          .manualStart(app.params)
+          .then()
+          .catch(() => console.log("manual start error"));
       },
       () => {
-        app.stepper[req.body.axis].manualStop();
+        app.stepper[req.body.axis]
+          .manualStop()
+          .then()
+          .catch(() => console.log("manual stop error"));
       }
     );
     res.json({
