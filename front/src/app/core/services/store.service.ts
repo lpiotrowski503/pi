@@ -19,7 +19,7 @@ export class StoreService {
   }
 
   public getProgram(id: string) {
-    return this.store.programs.filter(program => program._id === id)[0];
+    return this.store.programs.filter(program => `${program._id}` === id)[0];
   }
 
   public setPrograms(programs: any[]): void {
