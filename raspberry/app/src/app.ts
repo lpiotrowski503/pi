@@ -19,7 +19,7 @@ let byPass = () => {
   httpPass = false;
   setTimeout(() => {
     httpPass = true;
-  }, 2000);
+  }, 500);
 };
 //
 // ──────────────────────────────────────────────────────────
@@ -32,8 +32,8 @@ const stepperAxis = (axis: string) => {
   } else {
     app.setAutoParams({ axis, db, nextStep });
     app.stepper[axis].autoGoToPosition(app.params).then((response: any) => {
-      console.log("then---", response);
-      console.log("current", app.current.position);
+      // console.log("then---", response);
+      // console.log("current", app.current.position);
     });
   }
 };
@@ -51,10 +51,10 @@ const nextStep = () => {
       }, 1);
     } else {
       console.log("program finish----------------");
-      console.log(app.moveCounter);
-      console.log(app.settings.length);
-      console.log("current", app.current.position);
-      console.log("-----------------------------------");
+      // console.log(app.moveCounter);
+      // console.log(app.settings.length);
+      // console.log("current", app.current.position);
+      // console.log("-----------------------------------");
       return;
     }
   } else {
@@ -68,7 +68,8 @@ const autoStartProgram = () => {
   stepperAxis("z");
 };
 
-const prepareAuto = async (id: string) => {
+// const prepareAuto = async (id: string) => {
+const prepareAuto = async (program: any) => {
   app.current = await db.getCurrent();
   app.stepper = null;
   app.stepper = {
@@ -76,11 +77,13 @@ const prepareAuto = async (id: string) => {
     y: new Stepper(6, 13, app.current.position.y),
     z: new Stepper(19, 26, app.current.position.z)
   };
-  app.program = new Program(await db.getProgram(id));
+
+  // app.program = new Program(await db.getProgram(id));
+  app.program = new Program(program);
   app.program.setParams(app.current.position, (_settings: any) => {
     app.settings = _settings;
-    console.log(app.current);
-    console.log(app.settings);
+    // console.log(app.current);
+    // console.log(app.settings);
   });
 };
 //
@@ -139,8 +142,10 @@ app.board.on("ready", async () => {
     res.status(200).json(await db.deleteProgram(req.params.id));
   });
 
-  app.server.get("/api/program/load/:id", async (req, res) => {
-    await prepareAuto(req.params.id);
+  app.server.post("/api/program/load/:id", async (req, res) => {
+    console.log(req.body);
+    // await prepareAuto(req.params.id, req.body);
+    await prepareAuto(req.body);
     res.status(200).end();
   });
 
@@ -153,7 +158,7 @@ app.board.on("ready", async () => {
       }
     } catch (error) {
       console.log("error");
-      console.log(error);
+      // console.log(error);
     }
     res.status(200).end();
   });

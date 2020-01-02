@@ -30,9 +30,13 @@ export class ListComponent implements OnInit {
 
     public open(item: any): void {
         this.httpClient
-            .get(`http://192.168.43.77:3000/api/program/load/${item._id}`, {
-                headers: { "Content-Type": "application/json" }
-            })
+            .post(
+                `http://192.168.43.77:3000/api/program/load/${item._id}`,
+                item,
+                {
+                    headers: { "Content-Type": "application/json" }
+                }
+            )
             .subscribe(() => this.router.navigate([`auto/source/${item._id}`]));
     }
 }
