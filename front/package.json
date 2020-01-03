@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build-node": "ng build --prod --output-path ../server/api/public/ --configuration=production-node",
+    "build:node": "ng build --prod --output-path ../server/api/public/ --configuration=production-node",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

@@ -7,6 +7,7 @@ export const environment = {
   // raspberry: "http://192.168.43.77:3000/api/"
   // raspberry: "http://localhost:3000/api/"
   raspberry: "api/"
+  // raspberry: "https://pi-programs.herokuapp.com/api/"
 };
 
 /*

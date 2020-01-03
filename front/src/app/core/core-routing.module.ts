@@ -1,3 +1,5 @@
+import { StatsComponent } from "./pages/stats/stats.component";
+import { CanvasComponent } from "./pages/canvas/canvas.component";
 import { NgModule } from "@angular/core";
 import { Routes, RouterModule } from "@angular/router";
 
@@ -22,6 +24,14 @@ const routes: Routes = [
       {
         path: "edit/:id",
         component: EditProgramComponent
+      },
+      {
+        path: "canvas",
+        component: CanvasComponent
+      },
+      {
+        path: "stats",
+        component: StatsComponent
       }
     ]
   }

@@ -17,6 +17,14 @@ export class CoreComponent implements OnInit {
       {
         name: "New",
         path: "app/new"
+      },
+      {
+        name: "Canvas",
+        path: "app/canvas"
+      },
+      {
+        name: "Stats",
+        path: "app/stats"
       }
     ];
   }
