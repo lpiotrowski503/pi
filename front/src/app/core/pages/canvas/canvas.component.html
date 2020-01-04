@@ -1,3 +1,21 @@
-<canvas id="canvas-container" class="canvas" (mousedown)="onMouseEnter($event)" (mouseup)="onLeave()"
-  (mousemove)="onMouseMove($event)" (touchstart)="onTouchEnter($event)" (touchend)="onLeave()"
-  (touchmove)="onTouchMove($event)"></canvas>
+<div class="flex-row">
+  <div class="flex-col flex-item">
+    <label class="label" for="name">Name</label>
+    <input class="input" name="name" [(ngModel)]="formData.program.name">
+  </div>
+  <div class="flex-col flex-item">
+    <label class="label" for="author">Author</label>
+    <input class="input" name="author" [(ngModel)]="formData.program.author">
+  </div>
+  <div class="flex-row-end">
+    <button (click)="onSave()" class="btn btn--save flex-item">save</button>
+  </div>
+</div>
+<div class="flex-col program-src__container">
+  <label class="label" for="src">Rysuj program</label>
+  <div>
+    <canvas id="canvas-container" height="500px" width="500px" class="canvas" (mousedown)="onMouseEnter($event)"
+      (mouseup)="onLeave()" (mousemove)="onMouseMove($event)" (touchstart)="onTouchEnter($event)" (touchend)="onLeave()"
+      (touchmove)="onTouchMove($event)"></canvas>
+  </div>
+</div>

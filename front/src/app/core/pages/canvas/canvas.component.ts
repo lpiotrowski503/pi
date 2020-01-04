@@ -1,4 +1,6 @@
 import { Component, OnInit, AfterViewInit, HostListener } from "@angular/core";
+import { StoreService } from "../../services/store.service";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-canvas",
@@ -10,74 +12,94 @@ export class CanvasComponent implements OnInit, AfterViewInit {
   public context: any;
   public isWriting: boolean;
   public src: string[];
+  public formData: any;
 
-  constructor() {
+  constructor(private router: Router, private store: StoreService) {
     this.isWriting = false;
     this.src = [];
+    this.formData = {
+      program: {
+        _id: "",
+        name: "",
+        author: "",
+        src: []
+      }
+    };
   }
 
   ngOnInit() {}
 
   ngAfterViewInit() {
     this.canvas = document.getElementById("canvas-container");
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight - 102;
     this.context = this.canvas.getContext("2d");
     this.context.strokeStyle = "red";
+  }
+
+  public onSave(): void {
+    this.store
+      .createProgram({
+        name: this.formData.program.name,
+        author: this.formData.program.author,
+        src: this.formData.program.src
+      })
+      .subscribe(() => this.router.navigate(["app"]));
   }
 
   private _setStartWriting(): void {
     this.isWriting = true;
     this.context.beginPath();
-    this.src.push("g0 x0 y0 z20");
+    this.formData.program.src.push("g0 x0 y0 z20");
   }
 
   private _startWriting(): void {
-    this.src.push("g1 z0");
+    this.formData.program.src.push("g1 z0");
   }
 
   private _enterInitialize(position: string): void {
     this._setStartWriting();
-    this.src.push(position);
+    this.formData.program.src.push(position);
     this._startWriting();
   }
 
   public onMouseEnter(event: MouseEvent): void {
-    this._enterInitialize(`g0 x${event.x} y${event.y - 102}`);
+    this._enterInitialize(`g0 x${event.offsetX} y${event.offsetY}`);
   }
 
-  public onTouchEnter(event: TouchEvent): void {
+  public onTouchEnter(event: TouchEvent | any): void {
     this._enterInitialize(
-      `g0 x${event.changedTouches[0].clientX} y${event.changedTouches[0]
-        .clientY - 102}`
+      `g0 x${event.changedTouches[0].clientX -
+        event.changedTouches[0].target.offsetLeft} y${event.changedTouches[0]
+        .clientY - event.changedTouches[0].target.offsetTop}`
     );
   }
 
   public onLeave(): void {
     this.isWriting = false;
     this.context.closePath();
-    this.src.push("g0 z20");
-    console.log(this.src);
+    this.formData.program.src.push("g0 z20");
   }
 
   public onMouseMove(event: MouseEvent): void {
     if (this.isWriting) {
-      this.context.lineTo(event.x, event.y - 102);
+      this.context.lineTo(event.offsetX, event.offsetY);
       this.context.stroke();
-      this.src.push(`g1 x${event.x} y${event.y - 102}`);
+      this.formData.program.src.push(`g1 x${event.offsetX} y${event.offsetY}`);
     }
   }
 
-  public onTouchMove(event: TouchEvent): void {
+  public onTouchMove(event: TouchEvent | any): void {
     if (this.isWriting) {
       this.context.lineTo(
-        event.changedTouches[0].clientX,
-        event.changedTouches[0].clientY - 102
+        event.changedTouches[0].clientX -
+          event.changedTouches[0].target.offsetLeft,
+        event.changedTouches[0].clientY -
+          event.changedTouches[0].target.offsetTop
       );
       this.context.stroke();
-      this.src.push(
-        `g1 x${event.changedTouches[0].clientX} y${event.changedTouches[0]
-          .clientY - 102}`
+      this.formData.program.src.push(
+        `g1 x${event.changedTouches[0].clientX -
+          event.changedTouches[0].target.offsetLeft} y${event.changedTouches[0]
+          .clientY - event.changedTouches[0].target.offsetTop}`
       );
     }
   }
