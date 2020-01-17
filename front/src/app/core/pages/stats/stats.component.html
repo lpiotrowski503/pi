@@ -1,1 +1,5 @@
-<p>stats works!</p>
+<div class="chart">
+  <canvas class="canvas" height="100" baseChart="baseChart" [data]="data.value" [labels]="data.label"
+    [chartType]="chartType" [legend]="chartLegend" [colors]="chartColors" [options]="chartOptions"></canvas>
+  <button class="btn btn--save flex-item" *ngFor="let btn of btns" (click)="onChangeChartType(btn)">{{ btn }}</button>
+</div>

@@ -23,4 +23,12 @@ export class HttpService {
   public deleteProgram(id: string) {
     return this.http.delete(`${env.raspberry}program/${id}`);
   }
+
+  public getStatsServer1() {
+    return this.http.get<any>("http://77.55.212.134:8080/serwerownia1");
+  }
+
+  public getStatsServer2() {
+    return this.http.get<any>("http://77.55.212.134:8080/serwerownia2");
+  }
 }
