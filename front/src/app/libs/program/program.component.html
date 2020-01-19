@@ -11,7 +11,15 @@
     <button (click)="onSave()" class="btn btn--save flex-item">save</button>
   </div>
 </div>
-<div class="flex-col program-src__container">
-  <label class="label" for="src">Program source</label>
-  <textarea class="text-area" name="src" [(ngModel)]="input.program.src"></textarea>
+<div class="flex-row">
+  <div class="flex-col flex-item program-src__container">
+    <label class="label" for="src">Program source</label>
+    <textarea class="text-area" name="src" [(ngModel)]="input.program.src" (keyup)="onChange()"></textarea>
+  </div>
+  <div class="flex-col flex-item program-src__container">
+    <label class="label" for="src">Podgląd programu</label>
+    <div>
+      <canvas id="canvas-container" height="500px" width="500px" class="canvas"></canvas>
+    </div>
+  </div>
 </div>
