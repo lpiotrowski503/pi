@@ -1,12 +1,12 @@
 <ActionBar class="hidden">
 </ActionBar>
-<GridLayout rows="*, *, auto" columns="*, *">
+<GridLayout rows="*, *, *, auto" columns="*, *">
   <!--
   -- ──────────────────────────────────────────────────────────
   --   :::::: P O S I T I O N : :  :   :    :     :        :
   -- ──────────────────────────────────────────────────────────
   -->
-  <GridLayout row="0" col="0" rowSpan="2" rows="*, *" columns="auto, *" class="position">
+  <GridLayout row="0" col="0" rowSpan="3" rows="*, *, *" columns="auto, *" class="position">
     <FlexboxLayout row="0" col="0">
       <Label text="X:"></Label>
     </FlexboxLayout>
@@ -19,24 +19,32 @@
     <FlexboxLayout row="1" col="1">
       <Label [text]="position.y"></Label>
     </FlexboxLayout>
+    <FlexboxLayout row="2" col="0">
+      <Label text="Z:"></Label>
+    </FlexboxLayout>
+    <FlexboxLayout row="2" col="1">
+      <Label [text]="position.z"></Label>
+    </FlexboxLayout>
   </GridLayout>
   <!--
   -- ──────────────────────────────────────────────────────────
   --   :::::: M O V E : :  :   :    :     :        :          :
   -- ──────────────────────────────────────────────────────────
   -->
-  <GridLayout row="0" col="1" rowSpan="2" rows="*, *, *" columns="*, *, *" class="move">
-    <Button (touch)="onTouch('x', 1, $event)" row="0" col="1" text="X +"></Button>
-    <Button (touch)="onTouch('y', 1, $event)" row="1" col="0" text="Y +"></Button>
-    <Button (touch)="onTouch('y', -1, $event)" row="1" col="2" text="Y -"></Button>
-    <Button (touch)="onTouch('x', -1, $event)" row="2" col="1" text="X -"></Button>
+  <GridLayout row="0" col="1" rowSpan="3" rows="*, *, *" columns="*, *" class="move">
+    <Button (touch)="onTouch('x', 1, $event)" row="2" col="1" text="X +"></Button>
+    <Button (touch)="onTouch('x', -1, $event)" row="2" col="0" text="X -"></Button>
+    <Button (touch)="onTouch('y', 1, $event)" row="0" col="0" text="Y +"></Button>
+    <Button (touch)="onTouch('y', -1, $event)" row="1" col="0" text="Y -"></Button>
+    <Button (touch)="onTouch('z', 1, $event)" row="0" col="1" text="Z +"></Button>
+    <Button (touch)="onTouch('z', -1, $event)" row="1" col="1" text="Z -"></Button>
   </GridLayout>
   <!--
     -- ──────────────────────────────────────────────────────────────────
     --   :::::: V E L O C I T Y : :  :   :    :     :        :          :
     -- ──────────────────────────────────────────────────────────────────
     -->
-  <GridLayout row="2" col="0" rows="*" columns="*, *, *, *, *" class="velocity">
+  <GridLayout row="3" col="0" rows="*" columns="*, *, *, *, *" class="velocity">
     <Button (touch)="changeSpeed(1, $event)" [ngClass]="{ active: speed == 1, default: speed != 1 }" row="0" col="0"
       text="100%"></Button>
     <Button (touch)="changeSpeed(2, $event)" [ngClass]="{ active: speed == 2, default: speed != 2 }" row="0" col="1"
@@ -53,7 +61,7 @@
     --   :::::: O F F S E T : :  :   :    :     :        :          :
     -- ──────────────────────────────────────────────────────────────
     -->
-  <GridLayout row="2" col="1" rows="*" columns="*, *, *, *" class="offset">
+  <GridLayout row="3" col="1" rows="*" columns="*, *, *, *" class="offset">
     <Button row="0" col="0" text="O-X"></Button>
     <Button row="0" col="1" text="O-Y"></Button>
     <Button row="0" col="2" text="O-XY"></Button>

@@ -7,16 +7,16 @@ class Store {
     constructor(limitNumber = 50, board = {}, current = {}, stepper = {}, program = {}, settings = [], params = {}, moveCounter = 0, complite = 0, limit = {
         x: {
             max: limitNumber,
-            min: -limitNumber
+            min: -limitNumber,
         },
         y: {
             max: limitNumber,
-            min: -limitNumber
+            min: -limitNumber,
         },
         z: {
             max: limitNumber,
-            min: -limitNumber
-        }
+            min: -limitNumber,
+        },
     }, server = express(), raspi = require("raspi-io").RaspiIO, five = require("johnny-five")) {
         this.limitNumber = limitNumber;
         this.board = board;
@@ -38,7 +38,7 @@ class Store {
             console.log(`server running on port 3000`);
         });
         this.board = new five.Board({
-            io: new raspi()
+            io: new raspi(),
         });
     }
     setManualParams({ req, db }) {
@@ -49,8 +49,7 @@ class Store {
             callback: (response) => {
                 this.current.position[req.body.axis] = response.step;
                 db.updateCurrent(this.current);
-                console.log(this.current.position);
-            }
+            },
         };
     }
     setAutoParams({ axis, db, nextStep }) {
@@ -66,7 +65,7 @@ class Store {
                     nextStep();
                 }
             },
-            timeout: 1
+            timeout: 1,
         };
     }
 }

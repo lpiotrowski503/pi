@@ -16,16 +16,16 @@ export class Store {
     public limit: any = {
       x: {
         max: limitNumber,
-        min: -limitNumber
+        min: -limitNumber,
       },
       y: {
         max: limitNumber,
-        min: -limitNumber
+        min: -limitNumber,
       },
       z: {
         max: limitNumber,
-        min: -limitNumber
-      }
+        min: -limitNumber,
+      },
     },
     public server = express(),
     public raspi = require("raspi-io").RaspiIO,
@@ -38,7 +38,7 @@ export class Store {
       console.log(`server running on port 3000`);
     });
     this.board = new five.Board({
-      io: new raspi()
+      io: new raspi(),
     });
   }
 
@@ -50,8 +50,7 @@ export class Store {
       callback: (response: any) => {
         this.current.position[req.body.axis] = response.step;
         db.updateCurrent(this.current);
-        console.log(this.current.position);
-      }
+      },
     };
   }
 
@@ -68,7 +67,7 @@ export class Store {
           nextStep();
         }
       },
-      timeout: 1
+      timeout: 1,
     };
   }
 }

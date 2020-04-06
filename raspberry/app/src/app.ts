@@ -13,6 +13,8 @@ const http = new Http();
 const app = new Store();
 const db = new Db();
 const auto = new Auto();
+let stepsNumber = 0;
+let startTime = 0;
 // ────────────────────────────────────────────────────────────────────────────────
 let httpPass = true;
 let byPass = () => {
@@ -22,18 +24,37 @@ let byPass = () => {
   }, 500);
 };
 //
+// ────────────────────────────────────────────────────────────
+//   :::::: U T I L S : :  :   :    :     :        :          :
+// ────────────────────────────────────────────────────────────
+//
+const getNowDate = () => {
+  const d = new Date();
+  const h = d.getHours() < 10 ? "0" + d.getHours().toString() : d.getHours();
+  const m =
+    d.getMinutes() < 10 ? "0" + d.getMinutes().toString() : d.getMinutes();
+  const s =
+    d.getSeconds() < 10 ? "0" + d.getSeconds().toString() : d.getSeconds();
+  const ms = d.getMilliseconds();
+  return `${h}:${m}:${s}::${ms}`;
+};
+
+//
 // ──────────────────────────────────────────────────────────
 //   :::::: A U T O : :  :   :    :     :        :          :
 // ──────────────────────────────────────────────────────────
 //
 const stepperAxis = (axis: string) => {
   if (app.settings[app.moveCounter][axis].direction === null) {
+    stepsNumber++;
     nextStep();
   } else {
     app.setAutoParams({ axis, db, nextStep });
     app.stepper[axis].autoGoToPosition(app.params).then((response: any) => {
-      // console.log("then---", response);
-      // console.log("current", app.current.position);
+      console.log(
+        "pi-out---auto-move--- " +
+          JSON.stringify({ ...app.current.position, time: getNowDate() })
+      );
     });
   }
 };
@@ -50,11 +71,16 @@ const nextStep = () => {
         stepperAxis("z");
       }, 1);
     } else {
-      console.log("program finish----------------");
-      // console.log(app.moveCounter);
-      // console.log(app.settings.length);
-      // console.log("current", app.current.position);
-      // console.log("-----------------------------------");
+      console.log(
+        "pi-out--- " +
+          JSON.stringify({
+            action: "finish program",
+            stepsLength: stepsNumber,
+            timeLength: ((Date.now() - startTime) / 1000).toFixed(1) + "s",
+            time: getNowDate(),
+          })
+      );
+      stepsNumber = 0;
       return;
     }
   } else {
@@ -63,6 +89,11 @@ const nextStep = () => {
 };
 
 const autoStartProgram = () => {
+  startTime = Date.now();
+  console.log(
+    "pi-out--- " +
+      JSON.stringify({ action: "start program", time: getNowDate() })
+  );
   stepperAxis("x");
   stepperAxis("y");
   stepperAxis("z");
@@ -70,35 +101,29 @@ const autoStartProgram = () => {
 
 // const prepareAuto = async (id: string) => {
 const prepareAuto = async (program: any) => {
-  app.current = await db.getCurrent();
-  app.stepper = null;
-  app.stepper = {
-    x: new Stepper(20, 21, app.current.position.x),
-    y: new Stepper(6, 13, app.current.position.y),
-    z: new Stepper(19, 26, app.current.position.z)
-  };
-
-  // app.program = new Program(await db.getProgram(id));
   app.program = new Program(program);
   app.program.setParams(app.current.position, (_settings: any) => {
     app.settings = _settings;
-    // console.log(app.current);
-    // console.log(app.settings);
   });
 };
+
+const init = async () => {
+  app.current = await db.getCurrent();
+  app.stepper = {
+    x: new Stepper(20, 21, app.current.position.x),
+    y: new Stepper(6, 13, app.current.position.y),
+    z: new Stepper(19, 26, app.current.position.z),
+  };
+};
+
+init();
+
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: G P I O : :  :   :    :     :        :          :
 // ────────────────────────────────────────────────────────────
 //
 app.board.on("ready", async () => {
-  // setTimeout(() => {
-  //   // console.log(app.current);
-  //   // console.log(app.settings);
-  //   // console.log(0, app);
-  //   // auto.autoStartProgram({ app, db });
-  //   // autoStartProgram();
-  // }, 2000);
   //
   // ──────────────────────────────────────────────────────────────────────
   //   :::::: H T T P  : :  :   :    :     :        :          :
@@ -111,19 +136,21 @@ app.board.on("ready", async () => {
       () => {
         app.stepper[req.body.axis]
           .manualStart(app.params)
-          .then()
           .catch(() => console.log("manual start error"));
       },
       () => {
         app.stepper[req.body.axis]
           .manualStop()
-          .then()
           .catch(() => console.log("manual stop error"));
       }
     );
-    res.json({
-      motor: req.body
-    });
+    const result = {
+      x: app.current.position.x.toFixed(2),
+      y: app.current.position.y.toFixed(2),
+      z: app.current.position.z.toFixed(2),
+    };
+    // console.log(result);
+    res.json(result);
   });
 
   app.server.get("/api/programs", async (req, res) => {
@@ -143,7 +170,14 @@ app.board.on("ready", async () => {
   });
 
   app.server.post("/api/program/load/:id", async (req, res) => {
-    console.log(req.body);
+    console.log(
+      "pi-out--- " +
+        JSON.stringify({
+          action: "loaded program",
+          name: req.body.name,
+          time: getNowDate(),
+        })
+    );
     // await prepareAuto(req.params.id, req.body);
     await prepareAuto(req.body);
     res.status(200).end();
@@ -158,7 +192,6 @@ app.board.on("ready", async () => {
       }
     } catch (error) {
       console.log("error");
-      // console.log(error);
     }
     res.status(200).end();
   });

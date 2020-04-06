@@ -7,7 +7,7 @@ import { ActivatedRoute } from "@angular/router";
 @Component({
     selector: "ns-source",
     templateUrl: "./source.component.html",
-    styleUrls: ["./source.component.css"]
+    styleUrls: ["./source.component.css"],
 })
 export class SourceComponent implements OnInit {
     public program: any = {};
@@ -30,26 +30,40 @@ export class SourceComponent implements OnInit {
     }
 
     public start() {
-        console.log("start");
+        console.log(
+            "ns-in---" +
+                JSON.stringify({
+                    type: "auto",
+                    action: "start",
+                    name: this.program.name,
+                    time: this.store.getNowDate(),
+                })
+        );
         this.httpClient
             .get("http://192.168.43.77:3000/api/program/start", {
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json" },
             })
-            .subscribe(
-                data => console.log("start", data),
-                err => console.log("err", err)
-            );
+            .subscribe();
+        // (data) => console.log("start", data));
+        // (err) => console.log("err", err)
     }
 
     public stop() {
-        console.log("stop");
+        console.log(
+            "ns-in---" +
+                JSON.stringify({
+                    type: "auto",
+                    action: "stop",
+                    name: this.program.name,
+                    time: this.store.getNowDate(),
+                })
+        );
         this.httpClient
             .get("http://192.168.43.77:3000/api/program/stop", {
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json" },
             })
-            .subscribe(
-                data => console.log("stop", data),
-                err => console.log("err", err)
-            );
+            .subscribe();
+        // (data) => console.log("stop", data),
+        // (err) => console.log("err", err)
     }
 }

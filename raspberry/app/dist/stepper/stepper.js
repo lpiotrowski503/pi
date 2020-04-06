@@ -97,6 +97,7 @@ class Stepper {
             this.manualLimit();
             this.args.callback(Object.assign({ step: this.steps }, this.args));
             setTimeout(() => {
+                console.log(this.steps);
                 this.manualMove();
             }, 1);
         }

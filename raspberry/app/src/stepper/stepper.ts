@@ -122,6 +122,7 @@ export class Stepper {
       this.manualLimit();
       this.args.callback({ step: this.steps, ...this.args });
       setTimeout(() => {
+        console.log(this.steps);
         this.manualMove();
       }, 1);
     }
@@ -133,7 +134,7 @@ export class Stepper {
       return new Promise((resolve, reject) => {
         this.args = {
           ...args,
-          resolve
+          resolve,
         };
         this.manualMove();
       });
@@ -226,7 +227,7 @@ export class Stepper {
       return new Promise((resolve, reject) => {
         this.args = {
           ...args,
-          resolve
+          resolve,
         };
         this.onStepSize();
         this.onDirection();

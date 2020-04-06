@@ -2,14 +2,14 @@
 </ActionBar>
 <GridLayout rows="*, auto" columns="*" class="list">
     <FlexboxLayout row="0" col="0">
-        <label [text]="program.src"></label>
+        <ListView [items]="program.src"></ListView>
     </FlexboxLayout>
     <GridLayout row="1" col="0" rows="*" columns="*, *, *, *" class="actions">
-        <Button row="0" col="0" class="play-btn action-btn" (touch)="start()">
+        <Button row="0" col="0" class="play-btn action-btn" (tap)="start()">
         </Button>
         <!-- <Button row="0" col="1" class="pause-btn action-btn">
         </Button> -->
-        <Button row="0" col="1" class="stop-btn action-btn" (touch)="stop()">
+        <Button row="0" col="1" class="stop-btn action-btn" (tap)="stop()">
         </Button>
         <Button row="0" col="3" text="BACK" (touch)="goBack()"></Button>
     </GridLayout>
