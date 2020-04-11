@@ -131,20 +131,21 @@ app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
     app.server.use("/api/motor", (req, res) => {
         app.setManualParams({ req, db });
         http.stepperStrategy(req, () => {
-            app.stepper[req.body.axis]
-                .manualStart(app.params)
-                .catch(() => console.log("manual start error"));
+            app.stepper[req.body.axis].manualStart(app.params);
+            // .then(() => console.log("start"))
+            // .catch(() => console.log("manual start error"));
         }, () => {
-            app.stepper[req.body.axis]
-                .manualStop()
-                .catch(() => console.log("manual stop error"));
+            app.stepper[req.body.axis].manualStop();
+            // .then(() => console.log("stop"))
+            // .catch(() => console.log("manual stop error"));
         });
         const result = {
             x: app.current.position.x.toFixed(2),
             y: app.current.position.y.toFixed(2),
             z: app.current.position.z.toFixed(2),
         };
-        // console.log(result);
+        console.log("pi-out--- " +
+            JSON.stringify(Object.assign(Object.assign({ action: "manual move" }, result), { time: getNowDate() })));
         res.json(result);
     });
     app.server.get("/api/programs", (req, res) => __awaiter(void 0, void 0, void 0, function* () {

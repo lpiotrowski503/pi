@@ -122,7 +122,14 @@ export class Stepper {
       this.manualLimit();
       this.args.callback({ step: this.steps, ...this.args });
       setTimeout(() => {
-        console.log(this.steps);
+        console.log(
+          "pi-out--- " +
+            JSON.stringify({
+              action: "manual move",
+              step: this.steps,
+              ...this.args,
+            })
+        );
         this.manualMove();
       }, 1);
     }

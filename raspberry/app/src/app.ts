@@ -134,14 +134,14 @@ app.board.on("ready", async () => {
     http.stepperStrategy(
       req,
       () => {
-        app.stepper[req.body.axis]
-          .manualStart(app.params)
-          .catch(() => console.log("manual start error"));
+        app.stepper[req.body.axis].manualStart(app.params);
+        // .then(() => console.log("start"))
+        // .catch(() => console.log("manual start error"));
       },
       () => {
-        app.stepper[req.body.axis]
-          .manualStop()
-          .catch(() => console.log("manual stop error"));
+        app.stepper[req.body.axis].manualStop();
+        // .then(() => console.log("stop"))
+        // .catch(() => console.log("manual stop error"));
       }
     );
     const result = {
@@ -149,7 +149,14 @@ app.board.on("ready", async () => {
       y: app.current.position.y.toFixed(2),
       z: app.current.position.z.toFixed(2),
     };
-    // console.log(result);
+    console.log(
+      "pi-out--- " +
+        JSON.stringify({
+          action: "manual move",
+          ...result,
+          time: getNowDate(),
+        })
+    );
     res.json(result);
   });
 
