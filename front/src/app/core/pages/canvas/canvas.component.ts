@@ -5,7 +5,7 @@ import { Router } from "@angular/router";
 @Component({
   selector: "app-canvas",
   templateUrl: "./canvas.component.html",
-  styleUrls: ["./canvas.component.sass"]
+  styleUrls: ["./canvas.component.sass"],
 })
 export class CanvasComponent implements OnInit, AfterViewInit {
   public canvas: any;
@@ -22,8 +22,8 @@ export class CanvasComponent implements OnInit, AfterViewInit {
         _id: "",
         name: "",
         author: "",
-        src: []
-      }
+        src: [],
+      },
     };
   }
 
@@ -40,7 +40,7 @@ export class CanvasComponent implements OnInit, AfterViewInit {
       .createProgram({
         name: this.formData.program.name,
         author: this.formData.program.author,
-        src: this.formData.program.src
+        src: this.formData.program.src,
       })
       .subscribe(() => this.router.navigate(["app"]));
   }
@@ -48,7 +48,7 @@ export class CanvasComponent implements OnInit, AfterViewInit {
   private _setStartWriting(): void {
     this.isWriting = true;
     this.context.beginPath();
-    this.formData.program.src.push("g0 x0 y0 z20");
+    this.formData.program.src.push("g1 z200");
   }
 
   private _startWriting(): void {
@@ -67,16 +67,20 @@ export class CanvasComponent implements OnInit, AfterViewInit {
 
   public onTouchEnter(event: TouchEvent | any): void {
     this._enterInitialize(
-      `g0 x${event.changedTouches[0].clientX -
-        event.changedTouches[0].target.offsetLeft} y${event.changedTouches[0]
-        .clientY - event.changedTouches[0].target.offsetTop}`
+      `g0 x${
+        event.changedTouches[0].clientX -
+        event.changedTouches[0].target.offsetLeft
+      } y${
+        event.changedTouches[0].clientY -
+        event.changedTouches[0].target.offsetTop
+      }`
     );
   }
 
   public onLeave(): void {
     this.isWriting = false;
     this.context.closePath();
-    this.formData.program.src.push("g0 z20");
+    this.formData.program.src.push("g1 z200");
   }
 
   public onMouseMove(event: MouseEvent): void {
@@ -97,9 +101,13 @@ export class CanvasComponent implements OnInit, AfterViewInit {
       );
       this.context.stroke();
       this.formData.program.src.push(
-        `g1 x${event.changedTouches[0].clientX -
-          event.changedTouches[0].target.offsetLeft} y${event.changedTouches[0]
-          .clientY - event.changedTouches[0].target.offsetTop}`
+        `g1 x${
+          event.changedTouches[0].clientX -
+          event.changedTouches[0].target.offsetLeft
+        } y${
+          event.changedTouches[0].clientY -
+          event.changedTouches[0].target.offsetTop
+        }`
       );
     }
   }
