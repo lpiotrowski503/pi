@@ -34,6 +34,7 @@ let byPass = () => {
         httpPass = true;
     }, 500);
 };
+let isStoped = false;
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: U T I L S : :  :   :    :     :        :          :
@@ -47,6 +48,18 @@ const getNowDate = () => {
     const ms = d.getMilliseconds();
     return `${h}:${m}:${s}::${ms}`;
 };
+const returnToZero = () => {
+    app.stepper["x"].autoStop();
+    app.stepper["y"].autoStop();
+    app.stepper["z"].autoStop();
+    setTimeout(() => {
+        prepareAuto({
+            src: ["g0 z500", "g0 x250 y250"],
+        });
+        app.moveCounter = 0;
+        autoStartProgram();
+    }, 1000);
+};
 //
 // ──────────────────────────────────────────────────────────
 //   :::::: A U T O : :  :   :    :     :        :          :
@@ -59,13 +72,30 @@ const stepperAxis = (axis) => {
     }
     else {
         app.setAutoParams({ axis, db, nextStep });
-        app.stepper[axis].autoGoToPosition(app.params).then((response) => {
+        app.stepper[axis]
+            .autoGoToPosition(app.params)
+            .then((response) => {
             console.log("pi-out---auto-move--- " +
                 JSON.stringify(Object.assign(Object.assign({}, app.current.position), { time: getNowDate() })));
+        })
+            .catch((error) => {
+            isStoped = true;
         });
     }
 };
 const nextStep = () => {
+    if (isStoped) {
+        console.log("pi-out--- " +
+            JSON.stringify({
+                action: "finish program",
+                stepsLength: stepsNumber,
+                timeLength: ((Date.now() - startTime) / 1000).toFixed(1) + "s",
+                time: getNowDate(),
+            }));
+        stepsNumber = 0;
+        isStoped = false;
+        return;
+    }
     app.complite++;
     if (app.complite === 3) {
         app.moveCounter++;
@@ -106,6 +136,7 @@ const prepareAuto = (program) => __awaiter(void 0, void 0, void 0, function* () 
     app.program = new program_1.Program(program);
     app.program.setParams(app.current.position, (_settings) => {
         app.settings = _settings;
+        // console.log("@@@", app.settings);
     });
 });
 const init = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -117,6 +148,12 @@ const init = () => __awaiter(void 0, void 0, void 0, function* () {
     };
 });
 init();
+// db.createCurrent().then((data) => console.log(data));
+db.getCurrentAll().then((data) => {
+    setTimeout(() => {
+        console.log(data);
+    }, 1000);
+});
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: G P I O : :  :   :    :     :        :          :
@@ -185,7 +222,40 @@ app.board.on("ready", () => __awaiter(void 0, void 0, void 0, function* () {
         res.status(200).end();
     });
     app.server.get("/api/program/stop", (req, res) => {
-        res.json({ id: "stop" });
+        returnToZero();
+        setTimeout(() => {
+            const result = {
+                x: app.current.position.x.toFixed(2),
+                y: app.current.position.y.toFixed(2),
+                z: app.current.position.z.toFixed(2),
+            };
+            res.status(200).json(result);
+        }, 1000);
+    });
+    app.server.put("/api/reset", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        app.current = yield db.resetCurrent(app.current);
+        const result = {
+            x: app.current.position.x.toFixed(2),
+            y: app.current.position.y.toFixed(2),
+            z: app.current.position.z.toFixed(2),
+        };
+        console.log(app.current);
+        init();
+        res.status(200).json(result);
+    }));
+    app.server.get("/api/zero", (req, res) => {
+        prepareAuto({
+            src: ["g1 x250 y250 z500"],
+        });
+        app.moveCounter = 0;
+        autoStartProgram();
+        setTimeout(() => {
+            res.status(200).json({
+                x: 250,
+                y: 250,
+                z: 500,
+            });
+        }, 2000);
     });
 }));
 // to do

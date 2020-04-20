@@ -50,7 +50,13 @@ class Stepper {
         this.stepSize = 16;
     }
     onStepSize(stepSize = this.args.stepSize) {
-        this[`step_${stepSize}`]();
+        // prevent too fast - speed limit
+        if (stepSize == 16) {
+            this[`step_${stepSize}`]();
+        }
+        else {
+            this[`step_8`]();
+        }
     }
     onDirection() {
         if (this.args.direction === 1) {

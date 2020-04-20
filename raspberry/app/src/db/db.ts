@@ -4,17 +4,39 @@ export class Db {
   constructor(
     public positions = new Datastore({
       filename: "./db/positions",
-      autoload: true
+      autoload: true,
     }),
     public programs = new Datastore({
       filename: "./db/programs",
-      autoload: true
+      autoload: true,
     })
   ) {}
+
+  public createCurrent(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.positions.insert(
+        {
+          name: "current",
+          position: { x: 250, y: 250, z: 0 },
+        },
+        (err, _program) => {
+          resolve(_program);
+        }
+      );
+    });
+  }
 
   public getCurrent(): Promise<any> {
     return new Promise((resolve, reject) => {
       this.positions.findOne({ name: "current" }, (err, current) => {
+        resolve(current);
+      });
+    });
+  }
+
+  public getCurrentAll(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.positions.find({ name: "current" }, (err, current) => {
         resolve(current);
       });
     });
@@ -73,14 +95,17 @@ export class Db {
     });
   }
 
-  public resetCurrent(): Promise<any> {
+  public resetCurrent(current: any): Promise<any> {
     return new Promise((resolve, reject) => {
+      current.position.x = 250;
+      current.position.y = 250;
+      current.position.z = 0;
       this.positions.update(
         { name: "current" },
-        { x: 0, y: 0, z: 0 },
+        current,
         {},
         (err, _current) => {
-          resolve(_current);
+          this.getCurrent().then((res) => resolve(res));
         }
       );
     });

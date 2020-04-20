@@ -23,6 +23,7 @@ let byPass = () => {
     httpPass = true;
   }, 500);
 };
+let isStoped = false;
 //
 // ────────────────────────────────────────────────────────────
 //   :::::: U T I L S : :  :   :    :     :        :          :
@@ -39,6 +40,20 @@ const getNowDate = () => {
   return `${h}:${m}:${s}::${ms}`;
 };
 
+const returnToZero = () => {
+  app.stepper["x"].autoStop();
+  app.stepper["y"].autoStop();
+  app.stepper["z"].autoStop();
+
+  setTimeout(() => {
+    prepareAuto({
+      src: ["g0 z500", "g0 x250 y250"],
+    });
+    app.moveCounter = 0;
+    autoStartProgram();
+  }, 1000);
+};
+
 //
 // ──────────────────────────────────────────────────────────
 //   :::::: A U T O : :  :   :    :     :        :          :
@@ -50,16 +65,36 @@ const stepperAxis = (axis: string) => {
     nextStep();
   } else {
     app.setAutoParams({ axis, db, nextStep });
-    app.stepper[axis].autoGoToPosition(app.params).then((response: any) => {
-      console.log(
-        "pi-out---auto-move--- " +
-          JSON.stringify({ ...app.current.position, time: getNowDate() })
-      );
-    });
+    app.stepper[axis]
+      .autoGoToPosition(app.params)
+      .then((response: any) => {
+        console.log(
+          "pi-out---auto-move--- " +
+            JSON.stringify({ ...app.current.position, time: getNowDate() })
+        );
+      })
+      .catch((error) => {
+        isStoped = true;
+      });
   }
 };
 
 const nextStep = () => {
+  if (isStoped) {
+    console.log(
+      "pi-out--- " +
+        JSON.stringify({
+          action: "finish program",
+          stepsLength: stepsNumber,
+          timeLength: ((Date.now() - startTime) / 1000).toFixed(1) + "s",
+          time: getNowDate(),
+        })
+    );
+    stepsNumber = 0;
+    isStoped = false;
+    return;
+  }
+
   app.complite++;
   if (app.complite === 3) {
     app.moveCounter++;
@@ -104,6 +139,7 @@ const prepareAuto = async (program: any) => {
   app.program = new Program(program);
   app.program.setParams(app.current.position, (_settings: any) => {
     app.settings = _settings;
+    // console.log("@@@", app.settings);
   });
 };
 
@@ -117,6 +153,13 @@ const init = async () => {
 };
 
 init();
+
+// db.createCurrent().then((data) => console.log(data));
+db.getCurrentAll().then((data) => {
+  setTimeout(() => {
+    console.log(data);
+  }, 1000);
+});
 
 //
 // ────────────────────────────────────────────────────────────
@@ -204,7 +247,44 @@ app.board.on("ready", async () => {
   });
 
   app.server.get("/api/program/stop", (req, res) => {
-    res.json({ id: "stop" });
+    returnToZero();
+
+    setTimeout(() => {
+      const result = {
+        x: app.current.position.x.toFixed(2),
+        y: app.current.position.y.toFixed(2),
+        z: app.current.position.z.toFixed(2),
+      };
+
+      res.status(200).json(result);
+    }, 1000);
+  });
+
+  app.server.put("/api/reset", async (req, res) => {
+    app.current = await db.resetCurrent(app.current);
+    const result = {
+      x: app.current.position.x.toFixed(2),
+      y: app.current.position.y.toFixed(2),
+      z: app.current.position.z.toFixed(2),
+    };
+    console.log(app.current);
+    init();
+    res.status(200).json(result);
+  });
+
+  app.server.get("/api/zero", (req, res) => {
+    prepareAuto({
+      src: ["g1 x250 y250 z500"],
+    });
+    app.moveCounter = 0;
+    autoStartProgram();
+    setTimeout(() => {
+      res.status(200).json({
+        x: 250,
+        y: 250,
+        z: 500,
+      });
+    }, 2000);
   });
 });
 // to do

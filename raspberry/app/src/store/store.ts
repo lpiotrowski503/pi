@@ -4,7 +4,7 @@ import * as path from "path";
 
 export class Store {
   constructor(
-    private limitNumber: number = 50,
+    private limitNumber: number = 500,
     public board: any = {},
     public current: any = {},
     public stepper: any = {},
@@ -16,15 +16,15 @@ export class Store {
     public limit: any = {
       x: {
         max: limitNumber,
-        min: -limitNumber,
+        min: 0,
       },
       y: {
         max: limitNumber,
-        min: -limitNumber,
+        min: 0,
       },
       z: {
-        max: limitNumber,
-        min: -limitNumber,
+        max: 1000,
+        min: -500,
       },
     },
     public server = express(),

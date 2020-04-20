@@ -13,17 +13,34 @@ const Datastore = require("nedb");
 class Db {
     constructor(positions = new Datastore({
         filename: "./db/positions",
-        autoload: true
+        autoload: true,
     }), programs = new Datastore({
         filename: "./db/programs",
-        autoload: true
+        autoload: true,
     })) {
         this.positions = positions;
         this.programs = programs;
     }
+    createCurrent() {
+        return new Promise((resolve, reject) => {
+            this.positions.insert({
+                name: "current",
+                position: { x: 250, y: 250, z: 0 },
+            }, (err, _program) => {
+                resolve(_program);
+            });
+        });
+    }
     getCurrent() {
         return new Promise((resolve, reject) => {
             this.positions.findOne({ name: "current" }, (err, current) => {
+                resolve(current);
+            });
+        });
+    }
+    getCurrentAll() {
+        return new Promise((resolve, reject) => {
+            this.positions.find({ name: "current" }, (err, current) => {
                 resolve(current);
             });
         });
@@ -72,10 +89,13 @@ class Db {
             });
         });
     }
-    resetCurrent() {
+    resetCurrent(current) {
         return new Promise((resolve, reject) => {
-            this.positions.update({ name: "current" }, { x: 0, y: 0, z: 0 }, {}, (err, _current) => {
-                resolve(_current);
+            current.position.x = 250;
+            current.position.y = 250;
+            current.position.z = 0;
+            this.positions.update({ name: "current" }, current, {}, (err, _current) => {
+                this.getCurrent().then((res) => resolve(res));
             });
         });
     }

@@ -4,18 +4,18 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 class Store {
-    constructor(limitNumber = 50, board = {}, current = {}, stepper = {}, program = {}, settings = [], params = {}, moveCounter = 0, complite = 0, limit = {
+    constructor(limitNumber = 500, board = {}, current = {}, stepper = {}, program = {}, settings = [], params = {}, moveCounter = 0, complite = 0, limit = {
         x: {
             max: limitNumber,
-            min: -limitNumber,
+            min: 0,
         },
         y: {
             max: limitNumber,
-            min: -limitNumber,
+            min: 0,
         },
         z: {
-            max: limitNumber,
-            min: -limitNumber,
+            max: 1000,
+            min: -500,
         },
     }, server = express(), raspi = require("raspi-io").RaspiIO, five = require("johnny-five")) {
         this.limitNumber = limitNumber;
