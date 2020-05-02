@@ -47,7 +47,7 @@ const returnToZero = () => {
 
   setTimeout(() => {
     prepareAuto({
-      src: ["g0 z500", "g0 x250 y250"],
+      src: ["g0 z250", "g0 x250 y250"],
     });
     app.moveCounter = 0;
     autoStartProgram();
@@ -234,16 +234,18 @@ app.board.on("ready", async () => {
   });
 
   app.server.get("/api/program/start", (req, res) => {
-    try {
-      if (httpPass) {
-        app.moveCounter = 0;
-        autoStartProgram();
-        byPass();
+    setTimeout(() => {
+      try {
+        if (httpPass) {
+          app.moveCounter = 0;
+          autoStartProgram();
+          byPass();
+        }
+      } catch (error) {
+        console.log("error");
       }
-    } catch (error) {
-      console.log("error");
-    }
-    res.status(200).end();
+      res.status(200).end();
+    }, 5000);
   });
 
   app.server.get("/api/program/stop", (req, res) => {
@@ -274,7 +276,7 @@ app.board.on("ready", async () => {
 
   app.server.get("/api/zero", (req, res) => {
     prepareAuto({
-      src: ["g1 x250 y250 z500"],
+      src: ["g1 x250 y250 z300"],
     });
     app.moveCounter = 0;
     autoStartProgram();

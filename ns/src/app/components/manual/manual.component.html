@@ -61,10 +61,9 @@
     --   :::::: O F F S E T : :  :   :    :     :        :          :
     -- ──────────────────────────────────────────────────────────────
     -->
-  <GridLayout row="3" col="1" rows="*" columns="*, *, *, *" class="offset">
-    <Button row="0" col="0" text="O-X"></Button>
-    <Button row="0" col="1" text="O-Y"></Button>
-    <Button row="0" col="2" text="O-XY"></Button>
-    <Button row="0" col="3" text="AUTO" (touch)="goToAuto()"></Button>
+  <GridLayout row="3" col="1" rows="*" columns="*, *, *" class="offset">
+    <Button row="0" col="0" text="BASE OFFSET" (tap)="goToBaseOffset()"></Button>
+    <Button row="0" col="1" text="RESET OFFSET" (tap)="resetOffset()"></Button>
+    <Button row="0" col="2" text="AUTO" (tap)="goToAuto()"></Button>
   </GridLayout>
 </GridLayout>

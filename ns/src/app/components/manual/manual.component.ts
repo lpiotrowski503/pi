@@ -112,11 +112,50 @@ export class ManualComponent implements OnInit, OnDestroy {
     }
 
     public changeSpeed(speed: number, event: TouchGestureEventData): void {
-        this.speed = speed;
+        // Prevent too fast
+        if (speed == 16) {
+            this.speed = speed;
+        } else {
+            this.speed = 8;
+        }
     }
 
     public goToAuto(): void {
         this.router.navigate(["auto"]);
+    }
+
+    public goToBaseOffset(): void {
+        console.log(
+            "ns-in---" +
+                JSON.stringify({
+                    type: "manual",
+                    action: "return to zero",
+                    time: this.store.getNowDate(),
+                })
+        );
+        this.httpClient
+            .get("http://192.168.43.77:3000/api/zero", {
+                headers: { "Content-Type": "application/json" },
+            })
+            .subscribe((res: any) => {
+                console.log("res", res);
+                this.position = res;
+            });
+    }
+
+    public resetOffset(): void {
+        this.httpClient
+            .put(
+                "http://192.168.43.77:3000/api/reset",
+                {},
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            )
+            .subscribe((res: any) => {
+                console.log("res", res);
+                this.position = res;
+            });
     }
 
     ngOnInit() {}
